@@ -8,34 +8,33 @@ import android.hardware.SensorManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
-import android.view.View;
 
 
 public class MainActivity extends AppCompatActivity
         implements SensorEventListener {
 
 
-    private int rootNote = 57; // note as MIDI number (C4?)
-
-    private int[] majorScaleSteps = {0, 2, 4, 5, 7, 9, 11, 12};
-
-    private int[] minorScaleSteps = {0, 2, 3, 5, 7, 8, 10, 12};
-
-    private double[] scaleFrequencies = populateScale(rootNote,
-            majorScaleSteps);
-
-    private FrequencyBuffer note1 = new FrequencyBuffer(scaleFrequencies[0]);
-    private FrequencyBuffer note2 = new FrequencyBuffer(scaleFrequencies[1]);
-    private FrequencyBuffer note3 = new FrequencyBuffer(scaleFrequencies[2]);
-    private FrequencyBuffer note4 = new FrequencyBuffer(scaleFrequencies[3]);
-    private FrequencyBuffer note5 = new FrequencyBuffer(scaleFrequencies[4]);
-    private FrequencyBuffer note6 = new FrequencyBuffer(scaleFrequencies[5]);
-    private FrequencyBuffer note7 = new FrequencyBuffer(scaleFrequencies[6]);
-    private FrequencyBuffer note8 = new FrequencyBuffer(scaleFrequencies[7]);
-
-    private FrequencyBuffer[] bufferPool = {note1, note2, note3, note4,
-                                            note5, note6, note7, note8};
-
+//    private int rootNote = 57; // note as MIDI number (C4?)
+//
+//    private int[] majorScaleSteps = {0, 2, 4, 5, 7, 9, 11, 12};
+//
+//    private int[] minorScaleSteps = {0, 2, 3, 5, 7, 8, 10, 12};
+//
+//    private double[] scaleFrequencies = populateScale(rootNote,
+//            majorScaleSteps);
+//
+//    private FrequencyBuffer note1 = new FrequencyBuffer(scaleFrequencies[0]);
+//    private FrequencyBuffer note2 = new FrequencyBuffer(scaleFrequencies[1]);
+//    private FrequencyBuffer note3 = new FrequencyBuffer(scaleFrequencies[2]);
+//    private FrequencyBuffer note4 = new FrequencyBuffer(scaleFrequencies[3]);
+//    private FrequencyBuffer note5 = new FrequencyBuffer(scaleFrequencies[4]);
+//    private FrequencyBuffer note6 = new FrequencyBuffer(scaleFrequencies[5]);
+//    private FrequencyBuffer note7 = new FrequencyBuffer(scaleFrequencies[6]);
+//    private FrequencyBuffer note8 = new FrequencyBuffer(scaleFrequencies[7]);
+//
+//    private FrequencyBuffer[] bufferPool = {note1, note2, note3, note4,
+//                                            note5, note6, note7, note8};
+//
     private int count = 0;
 
     private TextView textView;
@@ -53,9 +52,6 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        View layoutMain = findViewById(R.id.layoutMain);
-        View v;
-
         textView = (TextView) findViewById(R.id.mainSteps);
 
         mSensorManager = (SensorManager) getSystemService(this.SENSOR_SERVICE);
@@ -71,10 +67,11 @@ public class MainActivity extends AppCompatActivity
         if (sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
             // A step has occured we need to play and increment the counter
 
-            if (!firstStep)
-                bufferPool[(count-1)%8].stop();
-
-            bufferPool[count%8].play();
+            //even removing the music playback does not fix latency
+//            if (!firstStep)
+//                bufferPool[(count-1)%8].stop();
+//
+//            bufferPool[count%8].play();
 
             this.count++;
             textView.setText("Step Detector Detected : " + count);
@@ -85,7 +82,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        System.out.println("The accuracy of the sensor has been changed");
+        //System.out.println("The accuracy of the sensor has been changed");
         // IDEALLY WE WANT THIS TO BE IN SENSOR_STATUS_ACCURACY_HIGH. Not sure how to lock it
     }
 
@@ -118,6 +115,7 @@ public class MainActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         mSensorManager.registerListener(this, mStepDetectorSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        // this does pull data as fast as possible
     }
 
     protected void onStop() {
