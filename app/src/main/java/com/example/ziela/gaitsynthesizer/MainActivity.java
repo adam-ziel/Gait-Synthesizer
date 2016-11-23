@@ -1,6 +1,6 @@
 package com.example.ziela.gaitsynthesizer;
 
-import android.content.Intent;
+
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -8,30 +8,8 @@ import android.hardware.SensorManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
-
-import android.app.Activity;
-import android.net.Uri;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
-import android.widget.TextView;
 
-import android.os.SystemClock;
-
-import android.app.Activity;
-import android.media.MediaPlayer;
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnTouchListener;
-import android.widget.TextView;
-
-import android.media.AudioTrack;
-import android.media.AudioFormat;
-import android.media.AudioManager;
 
 public class MainActivity extends AppCompatActivity
         implements SensorEventListener {
@@ -67,6 +45,8 @@ public class MainActivity extends AppCompatActivity
     private SensorManager mSensorManager;
     private Sensor mStepDetectorSensor;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -87,15 +67,9 @@ public class MainActivity extends AppCompatActivity
 
     public void onSensorChanged(SensorEvent event) {
         Sensor sensor = event.sensor;
-        float[] values = event.values;
-        int value = -1;
-
-        if (values.length > 0) {
-            value = (int) values[0];
-        }
 
         if (sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
-            // For test only. Only allowed value is 1.0 i.e. for step taken
+            // A step has occured we need to play and increment the counter
 
             if (!firstStep)
                 bufferPool[(count-1)%8].stop();
@@ -111,7 +85,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
+        System.out.println("The accuracy of the sensor has been changed");
+        // IDEALLY WE WANT THIS TO BE IN SENSOR_STATUS_ACCURACY_HIGH. Not sure how to lock it
     }
 
     /**
