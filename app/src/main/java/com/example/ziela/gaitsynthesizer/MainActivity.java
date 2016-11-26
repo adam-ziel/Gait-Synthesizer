@@ -5,29 +5,18 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.PowerManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
 
 import android.app.Activity;
-import android.net.Uri;
-import android.os.Bundle;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.TextView;
 
-import android.os.SystemClock;
-
-import android.app.Activity;
-import android.media.MediaPlayer;
-import android.os.Bundle;
-import android.view.Menu;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
-import android.widget.TextView;
 
 import android.media.AudioTrack;
 import android.media.AudioFormat;
@@ -41,6 +30,8 @@ public class MainActivity extends AppCompatActivity
     static {
         System.loadLibrary("native-lib");
     }
+
+    PowerManager.WakeLock wakeLock;
 
     private int rootNote = 57; // note as MIDI number (C4?)
 
@@ -116,6 +107,13 @@ public class MainActivity extends AppCompatActivity
 
         mSensorManager = (SensorManager) getSystemService(this.SENSOR_SERVICE);
         mStepDetectorSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
+
+        mSensorManager.registerListener(this, mStepDetectorSensor, SensorManager.SENSOR_DELAY_FASTEST);
+
+        //this stuff will keep application running when we turn screen off
+        PowerManager mgr = (PowerManager)getSystemService(this.POWER_SERVICE);
+        wakeLock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyWakeLock");
+
 
     }
 
@@ -288,11 +286,16 @@ public class MainActivity extends AppCompatActivity
 
     protected void onResume() {
         super.onResume();
-        mSensorManager.registerListener(this, mStepDetectorSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        if (wakeLock.isHeld())
+            wakeLock.release(); //dont need to worry about keeping CPU on, the screen is back on
+        //mSensorManager.registerListener(this, mStepDetectorSensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
+    @Override
     protected void onStop() {
         super.onStop();
-        mSensorManager.unregisterListener(this, mStepDetectorSensor);
+        if (!wakeLock.isHeld())
+            wakeLock.acquire(); //I want to keep going when the screen is off so keep CPU on
+        //mSensorManager.unregisterListener(this, mStepDetectorSensor); //dont turn off sensor
     }
 }
