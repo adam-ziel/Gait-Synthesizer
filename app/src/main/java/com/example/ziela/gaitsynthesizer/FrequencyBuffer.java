@@ -118,17 +118,14 @@ public class FrequencyBuffer {
     /**
      * Stop playing the selected track
      */
-    public void stop()
-    {
+    public void stop() {
         //basically a redundancy check to ensure that we are playing in the first play
-        if (AudioTrack.PLAYSTATE_PLAYING == audioTrack.getPlayState())
-        {
+        if (AudioTrack.PLAYSTATE_PLAYING == audioTrack.getPlayState()) {
             audioTrack.stop();
             audioTrack.reloadStaticData();
             audioTrack.setLoopPoints(0, noteBuffer.length, -1);
 
-        }else
-        {
+        }else {
             System.out.println("You have tried to stop a track that was not playing and I stopped you");
         }
     }

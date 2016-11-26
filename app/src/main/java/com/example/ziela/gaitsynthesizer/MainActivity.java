@@ -55,6 +55,7 @@ public class MainActivity extends AppCompatActivity
                                             note5, note6, note7, note8};
 
     private int count = 0;
+    private int startNoteOffset; //used for fixing step text bug not starting at 0
 
     private TextView textView;
 
@@ -69,6 +70,13 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+        Intent intent = getIntent();
+        count = intent.getIntExtra(ConfigurationActivity.STARTING_NOTE_STRING, 1);
+        count++; //there was an assumption made that the note will play on the first step so to make that
+        //play the 0 note the index got -1. Im accounting for that here.
+        System.out.println("Got " + count + " from config");
+        startNoteOffset = count-1;
         // Example of a call to a native method
         //TextView tv = (TextView) findViewById(R.id.sample_text);
         //tv.setText(stringFromJNI());
@@ -108,6 +116,7 @@ public class MainActivity extends AppCompatActivity
         mSensorManager = (SensorManager) getSystemService(this.SENSOR_SERVICE);
         mStepDetectorSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
 
+        //link up the sensor. I only want to do this once. I will always keep it linked
         mSensorManager.registerListener(this, mStepDetectorSensor, SensorManager.SENSOR_DELAY_FASTEST);
 
         //this stuff will keep application running when we turn screen off
@@ -158,13 +167,16 @@ public class MainActivity extends AppCompatActivity
         if (sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
             // For test only. Only allowed value is 1.0 i.e. for step taken
 
-            if (!firstStep)
-                bufferPool[(count-1)%8].stop();
+            //I dont want protection here, I already have fault protection in
+            //the buffer class. Keep getting bugs where things arnt being stopped
+            //bufferPool[(count-1)%8].stop();
+
+            stopAllNotes(); // still keep getting bugs where notes arnt ending. This is my "solution"
 
             bufferPool[count%8].play();
 
             this.count++;
-            textView.setText("Step Detector Detected : " + count);
+            textView.setText("Step Detector Detected : " + (count-startNoteOffset));
 
             firstStep = false;
         }
@@ -173,6 +185,16 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
+    }
+
+    /**
+     * Method that ensures we get nothing still playing. Still get bugs somehow. Some note is not
+     * being turned off, and this doesnt help
+     */
+    private void stopAllNotes(){
+        for (int i =0; i < bufferPool.length; i ++){
+            bufferPool[i].stop();
+        }
     }
 
     /**

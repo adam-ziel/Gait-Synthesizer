@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 /**
@@ -24,11 +25,14 @@ import android.widget.TextView;
 public class ConfigurationActivity extends AppCompatActivity implements SensorEventListener {
 
     WebView webView;
-    private TextView textView;
+    private TextView textView, noteTextView;
     private SensorManager mSensorManager;
     private Sensor mStepDetectorSensor;
     private int count = 0;
 
+    public static final String STARTING_NOTE_STRING = "STARTING_NOTE_STRING";
+    private SeekBar noteSelectBar;
+    int startNote;
 
 
 
@@ -42,7 +46,28 @@ public class ConfigurationActivity extends AppCompatActivity implements SensorEv
         webView.loadUrl("https://thomas.vanhoutte.be/miniblog/wp-content/uploads/light_blue_material_design_loading.gif");
         webView.getSettings().setLoadWithOverviewMode(true);
         webView.getSettings().setUseWideViewPort(true);
+        noteTextView = (TextView) findViewById(R.id.startNoteTextView);
+        noteSelectBar = (SeekBar) findViewById(R.id.seekBar);
+        startNote = noteSelectBar.getProgress(); //get his initial val
+        noteTextView.setText("The starting note will be " + (startNote+1)); //set initial text
+        //scale him up by 1 b/c ppl are dumb and dont know counts start at 0
 
+        noteSelectBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int seekBarValue, boolean fromUser) {
+                startNote = seekBarValue;
+                noteTextView.setText("The starting note will be " + (startNote+1)); //update the msg to user
+                ////scale him up by 1 b/c ppl are dumb and dont know counts start at 0
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
 
         textView = (TextView) findViewById(R.id.stepsTakenText);
 
@@ -69,6 +94,7 @@ public class ConfigurationActivity extends AppCompatActivity implements SensorEv
             this.count++;
             textView.setText("Step Detector Detected : " + count);
             Intent synthesis = new Intent(ConfigurationActivity.this, MainActivity.class);
+            synthesis.putExtra(STARTING_NOTE_STRING, (startNote));
             ConfigurationActivity.this.startActivity(synthesis);
         }
     }
