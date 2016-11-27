@@ -5,18 +5,29 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.PowerManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
 
 import android.app.Activity;
+import android.net.Uri;
+import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.TextView;
 
+import android.os.SystemClock;
+
+import android.app.Activity;
+import android.media.MediaPlayer;
+import android.os.Bundle;
+import android.view.Menu;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
+import android.widget.TextView;
 
 import android.media.AudioTrack;
 import android.media.AudioFormat;
@@ -31,32 +42,38 @@ public class MainActivity extends AppCompatActivity
         System.loadLibrary("native-lib");
     }
 
-    PowerManager.WakeLock wakeLock;
-
-    private int rootNote; // note as MIDI number (C4?). Old val was 57
+    private int rootNote = 57; // note as MIDI number (C4?)
 
     private int[] majorScaleSteps = {0, 2, 4, 5, 7, 9, 11, 12};
 
     private int[] minorScaleSteps = {0, 2, 3, 5, 7, 8, 10, 12};
 
-    private double[] scaleFrequencies;
+    private double[] scaleFrequencies = populateScale(rootNote,
+            majorScaleSteps);
 
-    private FrequencyBuffer note1;
-    private FrequencyBuffer note2;
-    private FrequencyBuffer note3;
-    private FrequencyBuffer note4;
-    private FrequencyBuffer note5;
-    private FrequencyBuffer note6;
-    private FrequencyBuffer note7;
-    private FrequencyBuffer note8;
+    private FrequencyBuffer note1 = new FrequencyBuffer(scaleFrequencies[0]);
+    private FrequencyBuffer note2 = new FrequencyBuffer(scaleFrequencies[1]);
+    private FrequencyBuffer note3 = new FrequencyBuffer(scaleFrequencies[2]);
+    private FrequencyBuffer note4 = new FrequencyBuffer(scaleFrequencies[3]);
+    private FrequencyBuffer note5 = new FrequencyBuffer(scaleFrequencies[4]);
+    private FrequencyBuffer note6 = new FrequencyBuffer(scaleFrequencies[5]);
+    private FrequencyBuffer note7 = new FrequencyBuffer(scaleFrequencies[6]);
+    private FrequencyBuffer note8 = new FrequencyBuffer(scaleFrequencies[7]);
 
-    private FrequencyBuffer[] bufferPool = new FrequencyBuffer[8];
+    private FrequencyBuffer[] bufferPool = {note1, note2, note3, note4,
+                                            note5, note6, note7, note8};
 
-    private int count = 0;
+    private static int stepCount = 0;
 
-    private TextView textView;
+    private TextView stepDisplay;
+    public static TextView timer1Display;
+    public static TextView timer2Display;
+    public static TextView deviationDisplay;
 
     boolean firstStep = true;
+    private int lastStep;
+
+    private Timer timer = new Timer();
 
     private SensorManager mSensorManager;
     private Sensor mStepDetectorSensor;
@@ -66,29 +83,6 @@ public class MainActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        Intent intent = getIntent();
-        rootNote = intent.getIntExtra(ConfigurationActivity.STARTING_NOTE_STRING, 1);
-
-        scaleFrequencies =  populateScale(rootNote, majorScaleSteps);
-        note1 = new FrequencyBuffer(scaleFrequencies[0]);
-        note2 = new FrequencyBuffer(scaleFrequencies[1]);
-        note3 = new FrequencyBuffer(scaleFrequencies[2]);
-        note4 = new FrequencyBuffer(scaleFrequencies[3]);
-        note5 = new FrequencyBuffer(scaleFrequencies[4]);
-        note6 = new FrequencyBuffer(scaleFrequencies[5]);
-        note7 = new FrequencyBuffer(scaleFrequencies[6]);
-        note8 = new FrequencyBuffer(scaleFrequencies[7]);
-
-        bufferPool[0] = note1;
-        bufferPool[1] = note2;
-        bufferPool[2] = note3;
-        bufferPool[3] = note4;
-        bufferPool[4] = note5;
-        bufferPool[5] = note6;
-        bufferPool[6] = note7;
-        bufferPool[7] = note8;
-
 
         // Example of a call to a native method
         //TextView tv = (TextView) findViewById(R.id.sample_text);
@@ -124,18 +118,17 @@ public class MainActivity extends AppCompatActivity
         v = findViewById(R.id.button8);
         verifyAndSetOnTouchListener(v);
 
-        textView = (TextView) findViewById(R.id.mainSteps);
+        v = findViewById(R.id.simulatorButton);
+        verifyAndSetOnTouchListener(v);
+
+        stepDisplay = (TextView) findViewById(R.id.mainSteps);
+        timer1Display = (TextView) findViewById(R.id.timer1Text);
+        timer2Display = (TextView) findViewById(R.id.timer2Text);
+        deviationDisplay = (TextView) findViewById(R.id.deviationText);
+
 
         mSensorManager = (SensorManager) getSystemService(this.SENSOR_SERVICE);
         mStepDetectorSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
-
-        //link up the sensor. I only want to do this once. I will always keep it linked
-        mSensorManager.registerListener(this, mStepDetectorSensor, SensorManager.SENSOR_DELAY_FASTEST);
-
-        //this stuff will keep application running when we turn screen off
-        PowerManager mgr = (PowerManager)getSystemService(this.POWER_SERVICE);
-        wakeLock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyWakeLock");
-
 
     }
 
@@ -170,8 +163,10 @@ public class MainActivity extends AppCompatActivity
 
     public void onSensorChanged(SensorEvent event) {
         Sensor sensor = event.sensor;
+
         float[] values = event.values;
-        int value = -1;
+
+        int value = -1; // ?
 
         if (values.length > 0) {
             value = (int) values[0];
@@ -180,16 +175,13 @@ public class MainActivity extends AppCompatActivity
         if (sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
             // For test only. Only allowed value is 1.0 i.e. for step taken
 
-            //I dont want protection here, I already have fault protection in
-            //the buffer class. Keep getting bugs where things arnt being stopped
             if (!firstStep)
-                bufferPool[(count-1)%8].stop();
+                bufferPool[(stepCount-1)%8].stop();
 
+            bufferPool[stepCount%8].play();
 
-            bufferPool[count%8].play();
-
-            this.count++;
-            textView.setText("Step Detector Detected : " + (count));
+            this.stepCount++;
+            stepDisplay.setText("Step Detector Detected : " + stepCount);
 
             firstStep = false;
         }
@@ -199,7 +191,6 @@ public class MainActivity extends AppCompatActivity
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
-
 
     /**
      * Iterates through 8-entry frequency array, populating with
@@ -218,7 +209,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     /**
-     * Returns frequency from input integer MIDI note
+     * Retuns frequency from input integer MIDI note
      */
     public static double midiNoteToFrequency(int midiNote)
     {
@@ -262,6 +253,20 @@ public class MainActivity extends AppCompatActivity
                 break;
             case R.id.button8:
                 note8.play();
+                break;
+            case R.id.simulatorButton:
+                timer.listener();
+
+                if (!firstStep)
+                    bufferPool[lastStep].stop();
+
+                bufferPool[stepCount % 8].play();
+                lastStep = stepCount % 8;
+
+                this.stepCount++;
+                stepDisplay.setText("Step Detector Detected : " + stepCount);
+
+                firstStep = false;
                 break;
             default:
                 return;
@@ -312,16 +317,17 @@ public class MainActivity extends AppCompatActivity
 
     protected void onResume() {
         super.onResume();
-        if (wakeLock.isHeld())
-            wakeLock.release(); //dont need to worry about keeping CPU on, the screen is back on
-        //mSensorManager.registerListener(this, mStepDetectorSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        mSensorManager.registerListener(this, mStepDetectorSensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
-    @Override
     protected void onStop() {
         super.onStop();
-        if (!wakeLock.isHeld())
-            wakeLock.acquire(); //I want to keep going when the screen is off so keep CPU on
-        //mSensorManager.unregisterListener(this, mStepDetectorSensor); //dont turn off sensor
+        mSensorManager.unregisterListener(this, mStepDetectorSensor);
     }
+
+    public static void resetStepCount()
+    {
+        stepCount = 0;
+    }
+
 }

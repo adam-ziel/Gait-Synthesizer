@@ -127,12 +127,46 @@ tools:context="com.example.ziela.gaitsynthesizer.MainActivity">
     android:layout_toEndOf="@+id/button7" />
 
     <TextView
-        android:text="TextView"
+        android:text="Steps detected: "
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="132dp"
         android:id="@+id/mainSteps" />
+
+    <Button
+        android:text="Step Simulator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/simulatorButton" />
+
+    <TextView
+        android:text="Timer 1: "
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/mainSteps"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="31dp"
+        android:id="@+id/timer1Text" />
+
+    <TextView
+        android:text="Timer 2: "
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/timer1Text"
+        android:layout_alignStart="@+id/timer1Text"
+        android:id="@+id/timer2Text" />
+
+    <TextView
+        android:text="Deviation: "
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:id="@+id/deviationText"
+        android:layout_below="@+id/timer2Text"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
