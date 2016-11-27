@@ -33,29 +33,26 @@ public class MainActivity extends AppCompatActivity
 
     PowerManager.WakeLock wakeLock;
 
-    private int rootNote = 57; // note as MIDI number (C4?)
+    private int rootNote; // note as MIDI number (C4?). Old val was 57
 
     private int[] majorScaleSteps = {0, 2, 4, 5, 7, 9, 11, 12};
 
     private int[] minorScaleSteps = {0, 2, 3, 5, 7, 8, 10, 12};
 
-    private double[] scaleFrequencies = populateScale(rootNote,
-            majorScaleSteps);
+    private double[] scaleFrequencies;
 
-    private FrequencyBuffer note1 = new FrequencyBuffer(scaleFrequencies[0]);
-    private FrequencyBuffer note2 = new FrequencyBuffer(scaleFrequencies[1]);
-    private FrequencyBuffer note3 = new FrequencyBuffer(scaleFrequencies[2]);
-    private FrequencyBuffer note4 = new FrequencyBuffer(scaleFrequencies[3]);
-    private FrequencyBuffer note5 = new FrequencyBuffer(scaleFrequencies[4]);
-    private FrequencyBuffer note6 = new FrequencyBuffer(scaleFrequencies[5]);
-    private FrequencyBuffer note7 = new FrequencyBuffer(scaleFrequencies[6]);
-    private FrequencyBuffer note8 = new FrequencyBuffer(scaleFrequencies[7]);
+    private FrequencyBuffer note1;
+    private FrequencyBuffer note2;
+    private FrequencyBuffer note3;
+    private FrequencyBuffer note4;
+    private FrequencyBuffer note5;
+    private FrequencyBuffer note6;
+    private FrequencyBuffer note7;
+    private FrequencyBuffer note8;
 
-    private FrequencyBuffer[] bufferPool = {note1, note2, note3, note4,
-                                            note5, note6, note7, note8};
+    private FrequencyBuffer[] bufferPool = new FrequencyBuffer[8];
 
     private int count = 0;
-    private int startNoteOffset; //used for fixing step text bug not starting at 0
 
     private TextView textView;
 
@@ -70,13 +67,29 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         Intent intent = getIntent();
-        count = intent.getIntExtra(ConfigurationActivity.STARTING_NOTE_STRING, 1);
-        count++; //there was an assumption made that the note will play on the first step so to make that
-        //play the 0 note the index got -1. Im accounting for that here.
-        System.out.println("Got " + count + " from config");
-        startNoteOffset = count-1;
+        rootNote = intent.getIntExtra(ConfigurationActivity.STARTING_NOTE_STRING, 1);
+
+        scaleFrequencies =  populateScale(rootNote, majorScaleSteps);
+        note1 = new FrequencyBuffer(scaleFrequencies[0]);
+        note2 = new FrequencyBuffer(scaleFrequencies[1]);
+        note3 = new FrequencyBuffer(scaleFrequencies[2]);
+        note4 = new FrequencyBuffer(scaleFrequencies[3]);
+        note5 = new FrequencyBuffer(scaleFrequencies[4]);
+        note6 = new FrequencyBuffer(scaleFrequencies[5]);
+        note7 = new FrequencyBuffer(scaleFrequencies[6]);
+        note8 = new FrequencyBuffer(scaleFrequencies[7]);
+
+        bufferPool[0] = note1;
+        bufferPool[1] = note2;
+        bufferPool[2] = note3;
+        bufferPool[3] = note4;
+        bufferPool[4] = note5;
+        bufferPool[5] = note6;
+        bufferPool[6] = note7;
+        bufferPool[7] = note8;
+
+
         // Example of a call to a native method
         //TextView tv = (TextView) findViewById(R.id.sample_text);
         //tv.setText(stringFromJNI());
@@ -169,14 +182,14 @@ public class MainActivity extends AppCompatActivity
 
             //I dont want protection here, I already have fault protection in
             //the buffer class. Keep getting bugs where things arnt being stopped
-            //bufferPool[(count-1)%8].stop();
+            if (!firstStep)
+                bufferPool[(count-1)%8].stop();
 
-            stopAllNotes(); // still keep getting bugs where notes arnt ending. This is my "solution"
 
             bufferPool[count%8].play();
 
             this.count++;
-            textView.setText("Step Detector Detected : " + (count-startNoteOffset));
+            textView.setText("Step Detector Detected : " + (count));
 
             firstStep = false;
         }
@@ -187,15 +200,6 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    /**
-     * Method that ensures we get nothing still playing. Still get bugs somehow. Some note is not
-     * being turned off, and this doesnt help
-     */
-    private void stopAllNotes(){
-        for (int i =0; i < bufferPool.length; i ++){
-            bufferPool[i].stop();
-        }
-    }
 
     /**
      * Iterates through 8-entry frequency array, populating with
@@ -214,7 +218,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     /**
-     * Retuns frequency from input integer MIDI note
+     * Returns frequency from input integer MIDI note
      */
     public static double midiNoteToFrequency(int midiNote)
     {
