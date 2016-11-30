@@ -1,37 +1,38 @@
 package com.example.ziela.gaitsynthesizer;
 
 /**
- * Created by ziela on 11/26/16.
+ * This class acts as a stopwatch, by polling system time on each step event.
+ * It compares each pair of consecutive steps with each other, and progresses the user
+ * through the musical sequence depending on how regular their ratio is.
  */
-
 public class Timer
 {
     private long startTime;
 
-    private long stopTime;
+    private long[] pastTwoStepIntervals = {0, 0};
 
-    private long[] timerBuffer = {0, 0};
+    private double tolerance = 0.1;
 
-    double tolerance = 0.1;
+    private double deviation;
 
-    double deviation;
+    private boolean TIMER_IDLE = true;
 
-    boolean TIMER_IDLE = true;
 
     /**
-     * Will be called every time a step is detected
+     * Timer routine called every time a step is detected
      */
-    public void listener()
+    public void onStep()
     {
         if (TIMER_IDLE) // i.e. there's no active timer we have to stop
             start();
         else
         {
-            stop(); // stop current timer
-            compare(); // compare buffer values against tolerance
-            start(); // start new timer
+            stop();
+            compare(); // compare timer deviations against tolerance
+            start();
         }
     }
+
 
     /**
      * Records start time, and puts down TIMER_IDLE flag
@@ -43,51 +44,74 @@ public class Timer
         TIMER_IDLE = false;
     }
 
+
+    /**
+     * Right shifts array contents to make room for new time,
+     * then places the new step interval in index zero
+     */
     public void stop()
     {
-        timerBuffer[1] = timerBuffer[0]; // shift right so index 1 is empty
+        pastTwoStepIntervals[1] = pastTwoStepIntervals[0]; // shift right to vacate index 0
 
-        timerBuffer[0] = System.currentTimeMillis() - startTime;
+        pastTwoStepIntervals[0] = System.currentTimeMillis() - startTime;
 
-        MainActivity.timer1Display.setText("Timer 1:" + timerBuffer[0]);
-        MainActivity.timer2Display.setText("Timer 2: " + timerBuffer[1]);
+        updateTimerDisplays();
     }
 
+
+    /**
+     * Gets the ratio between the current, and previous step intervals,
+     * then compares it against a tolerance value.
+     * If outside the tolerance, all times are cleared, and the stepcount is reset.
+     */
     public void compare()
     {
-        if (timerBuffer[1] != 0 ) // not ideal... determining if null would be better
+        if (pastTwoStepIntervals[1] != 0) // implies there are two values in the buffer
         {
-            deviation = (double) timerBuffer[1] / timerBuffer[0];
-            MainActivity.deviationDisplay.setText("Deviation: " + String.format("%.3f", deviation));
+            deviation = (double) pastTwoStepIntervals[0] / pastTwoStepIntervals[1];
 
-            // reset if outside the tolerance
-            if (Math.abs(1 - deviation) > tolerance)
+            MainActivity.setDeviationDisplay("Deviation: " +
+                    String.format("%.1f", (deviation * 100) - 100) + "%");
+
+            if (Math.abs(1 - deviation) > tolerance) // reset if outside the tolerance
             {
-                timerBuffer[0] = 0;
-                timerBuffer[1] = 0; // We should only have to reset this one
-
-                MainActivity.timer1Display.setText("Timer 1:" + timerBuffer[0]);
-                MainActivity.timer2Display.setText("Timer 2: " + timerBuffer[1]);
-
-                TIMER_IDLE = true;
-
-                MainActivity.resetStepCount();
-
-                /* Reset frequency pool (return value??)*/
+                resetStepCountAndTimerBuffer();
             }
         }
-
-//        MainActivity.timer1Display.setText("Timer 1: " + timerBuffer[0]);
-
     }
 
-    public long getTime1()
+
+    /**
+     * Protocol for handling steps that fall outside of the regularity tolerance
+     */
+    public void resetStepCountAndTimerBuffer()
     {
-        return timerBuffer[0];
+        MainActivity.resetStepCount();
+
+        resetTimerBuffer();
+
+        updateTimerDisplays();
+
+        TIMER_IDLE = true;
     }
 
-    public long getTime2()
+
+    /**
+     * Sets both indices back to 0
+     */
+    public void resetTimerBuffer()
     {
-        return timerBuffer[1];
+        pastTwoStepIntervals[0] = 0;
+        pastTwoStepIntervals[1] = 0;
+    }
+
+
+    /**
+     * Updates the TextView instances in MainActivity
+     */
+    public void updateTimerDisplays()
+    {
+        MainActivity.setTimer1Display("Timer 1:" + pastTwoStepIntervals[0]);
+        MainActivity.setTimer2Display("Timer 2: " + pastTwoStepIntervals[1]);
     }
 }

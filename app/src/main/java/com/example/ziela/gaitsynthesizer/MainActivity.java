@@ -1,82 +1,50 @@
 package com.example.ziela.gaitsynthesizer;
 
-import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.widget.TextView;
-
-import android.app.Activity;
-import android.net.Uri;
-import android.os.Bundle;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.TextView;
-
-import android.os.SystemClock;
-
-import android.app.Activity;
-import android.media.MediaPlayer;
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
-import android.widget.TextView;
 
-import android.media.AudioTrack;
-import android.media.AudioFormat;
-import android.media.AudioManager;
-
+/**
+ * Main app activity.
+ * This is where we do all our audio playing and step detecting
+ */
 public class MainActivity extends AppCompatActivity
-        implements OnTouchListener, SensorEventListener {
+        implements OnTouchListener, SensorEventListener
+{
+    PowerManager.WakeLock wakeLock;
 
+    private FrequencyBuffer[] bufferPool = new FrequencyBuffer[8];
 
-    // Used to load the 'native-lib' library on application startup.
-    static {
-        System.loadLibrary("native-lib");
-    }
-
-    private int rootNote = 57; // note as MIDI number (C4?)
+    private double[] scaleFrequencies = new double[8];
 
     private int[] majorScaleSteps = {0, 2, 4, 5, 7, 9, 11, 12};
 
     private int[] minorScaleSteps = {0, 2, 3, 5, 7, 8, 10, 12};
 
-    private double[] scaleFrequencies = populateScale(rootNote,
-            majorScaleSteps);
-
-    private FrequencyBuffer note1 = new FrequencyBuffer(scaleFrequencies[0]);
-    private FrequencyBuffer note2 = new FrequencyBuffer(scaleFrequencies[1]);
-    private FrequencyBuffer note3 = new FrequencyBuffer(scaleFrequencies[2]);
-    private FrequencyBuffer note4 = new FrequencyBuffer(scaleFrequencies[3]);
-    private FrequencyBuffer note5 = new FrequencyBuffer(scaleFrequencies[4]);
-    private FrequencyBuffer note6 = new FrequencyBuffer(scaleFrequencies[5]);
-    private FrequencyBuffer note7 = new FrequencyBuffer(scaleFrequencies[6]);
-    private FrequencyBuffer note8 = new FrequencyBuffer(scaleFrequencies[7]);
-
-    private FrequencyBuffer[] bufferPool = {note1, note2, note3, note4,
-                                            note5, note6, note7, note8};
+    private Timer timer = new Timer();
 
     private static int stepCount = 0;
 
-    private TextView stepDisplay;
-    public static TextView timer1Display;
-    public static TextView timer2Display;
-    public static TextView deviationDisplay;
-
-    boolean firstStep = true;
     private int lastStep;
 
-    private Timer timer = new Timer();
+    private boolean firstStep = true;
 
-    private SensorManager mSensorManager;
-    private Sensor mStepDetectorSensor;
+    private TextView stepCountDisplay;
+
+    private static TextView timer1Display;
+
+    private static TextView timer2Display;
+
+    private static TextView deviationDisplay;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -84,113 +52,72 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Example of a call to a native method
-        //TextView tv = (TextView) findViewById(R.id.sample_text);
-        //tv.setText(stringFromJNI());
+        int rootNote = InputActivity.getInputNote(); // starting note in scale
 
+        scaleFrequencies = populateScale(rootNote, majorScaleSteps);
 
-        View layoutMain = findViewById(R.id.layoutMain);
+        createFrequencyBufferForEachScaleIndex();
 
-        // Set on touch listener
-        View v;
+        getXMLHandles();
 
-        v = findViewById(R.id.button1);
-        verifyAndSetOnTouchListener(v);
+        prepareStepDetector();
 
-        v = findViewById(R.id.button2);
-        verifyAndSetOnTouchListener(v);
-
-        v = findViewById(R.id.button3);
-        verifyAndSetOnTouchListener(v);
-
-        v = findViewById(R.id.button4);
-        verifyAndSetOnTouchListener(v);
-
-        v = findViewById(R.id.button5);
-        verifyAndSetOnTouchListener(v);
-
-        v = findViewById(R.id.button6);
-        verifyAndSetOnTouchListener(v);
-
-        v = findViewById(R.id.button7);
-        verifyAndSetOnTouchListener(v);
-
-        v = findViewById(R.id.button8);
-        verifyAndSetOnTouchListener(v);
-
-        v = findViewById(R.id.simulatorButton);
-        verifyAndSetOnTouchListener(v);
-
-        stepDisplay = (TextView) findViewById(R.id.mainSteps);
-        timer1Display = (TextView) findViewById(R.id.timer1Text);
-        timer2Display = (TextView) findViewById(R.id.timer2Text);
-        deviationDisplay = (TextView) findViewById(R.id.deviationText);
-
-
-        mSensorManager = (SensorManager) getSystemService(this.SENSOR_SERVICE);
-        mStepDetectorSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
-
+        configurePowerManager();
     }
 
+
+    /**
+     * Triggers timer, and advances note sequence on step detection event
+     *
+     * @param event
+     */
+    public void onSensorChanged(SensorEvent event)
+    {
+        Sensor sensor = event.sensor;
+
+        if (sensor.getType() == Sensor.TYPE_STEP_DETECTOR)
+        {
+            timer.onStep();
+
+            advanceNoteSequence();
+        }
+    }
+
+
     @Override
-    /*
-     * This method is used for detecting touches,
-     * and distinguishing between presses and releases
+    /**
+     * Simulated step detection using button
      */
     public boolean onTouch(View v, MotionEvent event)
     {
-        int action = event.getAction();
-        int id = v.getId();
-
-        switch (action)
+        if (event.getAction() == MotionEvent.ACTION_DOWN)
         {
-            case MotionEvent.ACTION_DOWN: // Button is held down, start playing the music
+            timer.onStep();
 
-                playById(id);
-                break;
-
-            case MotionEvent.ACTION_UP: // Button has been released. Stop playing the music
-
-                stopById(id);
-                break;
-
-            default:
-                return false;
+            advanceNoteSequence();
         }
 
         return false;
     }
 
-    public void onSensorChanged(SensorEvent event) {
-        Sensor sensor = event.sensor;
 
-        float[] values = event.values;
+    /**
+     * Stop previous note, play next one, and increment step count
+     */
+    public void advanceNoteSequence()
+    {
+        if (!firstStep)
+            bufferPool[lastStep].stop();
 
-        int value = -1; // ?
+        bufferPool[stepCount%8].play();
+        lastStep = stepCount%8;
 
-        if (values.length > 0) {
-            value = (int) values[0];
-        }
+        stepCountDisplay.setText("Step Detector Detected: " + stepCount);
+        stepCount++;
 
-        if (sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
-            // For test only. Only allowed value is 1.0 i.e. for step taken
-
-            if (!firstStep)
-                bufferPool[(stepCount-1)%8].stop();
-
-            bufferPool[stepCount%8].play();
-
-            this.stepCount++;
-            stepDisplay.setText("Step Detector Detected : " + stepCount);
-
-            firstStep = false;
-        }
+        firstStep = false;
     }
 
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-    }
 
     /**
      * Iterates through 8-entry frequency array, populating with
@@ -198,7 +125,7 @@ public class MainActivity extends AppCompatActivity
      */
     public static double[] populateScale(int rootNote, int[] scaleSteps)
     {
-        double[] scaleFrequencies = new double[8];
+        double[] scaleFrequencies = new double[8]; // wasteful? but i guess killed once we return?
 
         for (int i = 0; i < 8; i++)
         {
@@ -208,8 +135,9 @@ public class MainActivity extends AppCompatActivity
         return scaleFrequencies;
     }
 
+
     /**
-     * Retuns frequency from input integer MIDI note
+     * Returns frequency from input integer MIDI note
      */
     public static double midiNoteToFrequency(int midiNote)
     {
@@ -217,117 +145,111 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public void verifyAndSetOnTouchListener(View v)
+    /**
+     * Creates FrequencyBuffer objects for each frequency in scaleFrequencies[],
+     * then fills bufferPool[] with these objects.
+     */
+    public void createFrequencyBufferForEachScaleIndex()
     {
+        FrequencyBuffer note1 = new FrequencyBuffer(scaleFrequencies[0]);
+        FrequencyBuffer note2 = new FrequencyBuffer(scaleFrequencies[1]);
+        FrequencyBuffer note3 = new FrequencyBuffer(scaleFrequencies[2]);
+        FrequencyBuffer note4 = new FrequencyBuffer(scaleFrequencies[3]);
+        FrequencyBuffer note5 = new FrequencyBuffer(scaleFrequencies[4]);
+        FrequencyBuffer note6 = new FrequencyBuffer(scaleFrequencies[5]);
+        FrequencyBuffer note7 = new FrequencyBuffer(scaleFrequencies[6]);
+        FrequencyBuffer note8 = new FrequencyBuffer(scaleFrequencies[7]);
+
+        bufferPool[0] = note1;
+        bufferPool[1] = note2;
+        bufferPool[2] = note3;
+        bufferPool[3] = note4;
+        bufferPool[4] = note5;
+        bufferPool[5] = note6;
+        bufferPool[6] = note7;
+        bufferPool[7] = note8;
+    }
+
+
+    /**
+     * Retrieves handles to all XML elements we need to modify
+     */
+    public void getXMLHandles()
+    {
+        stepCountDisplay = (TextView) findViewById(R.id.mainSteps);
+        timer1Display = (TextView) findViewById(R.id.timer1Text);
+        timer2Display = (TextView) findViewById(R.id.timer2Text);
+        deviationDisplay = (TextView) findViewById(R.id.deviationText);
+
+        View v = findViewById(R.id.simulatorButton);
+
         if (v != null)
             v.setOnTouchListener(this);
     }
 
+
     /**
-     * Begins playing buffer based on button id
+     * Matt, please rename. What is this doing?
      */
-    public void playById(int id)
+    public void prepareStepDetector()
     {
-        switch (id)
-        {
-            case R.id.button1:
-                note1.play();
-                break;
-            case R.id.button2:
-                note2.play();
-                break;
-            case R.id.button3:
-                note3.play();
-                break;
-            case R.id.button4:
-                note4.play();
-                break;
-            case R.id.button5:
-                note5.play();
-                break;
-            case R.id.button6:
-                note6.play();
-                break;
-            case R.id.button7:
-                note7.play();
-                break;
-            case R.id.button8:
-                note8.play();
-                break;
-            case R.id.simulatorButton:
-                timer.listener();
+        SensorManager sensorManager = (SensorManager) getSystemService(this.SENSOR_SERVICE);
 
-                if (!firstStep)
-                    bufferPool[lastStep].stop();
+        Sensor stepDetectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
 
-                bufferPool[stepCount % 8].play();
-                lastStep = stepCount % 8;
-
-                this.stepCount++;
-                stepDisplay.setText("Step Detector Detected : " + stepCount);
-
-                firstStep = false;
-                break;
-            default:
-                return;
-        }
+        //link up the sensor. I only want to do this once. I will always keep it linked
+        sensorManager.registerListener(this, stepDetectorSensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
+
     /**
-     * Stops buffer based on button id
+     * David, please rename
      */
-    public void stopById(int id)
+    public void configurePowerManager()
     {
-        switch (id)
-        {
-            case R.id.button1:
-                note1.stop();
-                break;
-            case R.id.button2:
-                note2.stop();
-                break;
-            case R.id.button3:
-                note3.stop();
-                break;
-            case R.id.button4:
-                note4.stop();
-                break;
-            case R.id.button5:
-                note5.stop();
-                break;
-            case R.id.button6:
-                note6.stop();
-                break;
-            case R.id.button7:
-                note7.stop();
-                break;
-            case R.id.button8:
-                note8.stop();
-                break;
-            default:
-                return;
-        }
+        PowerManager mgr = (PowerManager)getSystemService(this.POWER_SERVICE);
+
+        wakeLock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyWakeLock");
     }
 
-    /**
-     * A native method that is implemented by the 'native-lib' native library,
-     * which is packaged with this application.
-     */
-    public native String stringFromJNI();
 
-    protected void onResume() {
+    /**
+     * David's
+     */
+    protected void onResume()
+    {
         super.onResume();
-        mSensorManager.registerListener(this, mStepDetectorSensor, SensorManager.SENSOR_DELAY_FASTEST);
+
+        if (wakeLock.isHeld())
+            wakeLock.release(); //dont need to worry about keeping CPU on, the screen is back on
     }
 
-    protected void onStop() {
+    /**
+     * David's
+     */
+    protected void onStop()
+    {
         super.onStop();
-        mSensorManager.unregisterListener(this, mStepDetectorSensor);
+
+        if (!wakeLock.isHeld())
+            wakeLock.acquire(); //I want to keep going when the screen is off so keep CPU on
     }
+
+
+    public static void setDeviationDisplay(String message) { deviationDisplay.setText(message); }
+
+    public static void setTimer1Display(String message) { timer1Display.setText(message); }
+
+    public static void setTimer2Display(String message) { timer2Display.setText(message); }
 
     public static void resetStepCount()
     {
         stepCount = 0;
     }
 
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
 }
