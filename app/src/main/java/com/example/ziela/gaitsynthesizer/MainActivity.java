@@ -8,28 +8,14 @@ import android.hardware.SensorManager;
 import android.os.PowerManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.widget.TextView;
 
-import android.app.Activity;
-import android.view.MotionEvent;
+
+
 import android.view.View;
 
-import android.view.MotionEvent;
-import android.view.View.OnClickListener;
-import android.view.View.OnTouchListener;
-
-import android.media.AudioTrack;
-import android.media.AudioFormat;
-import android.media.AudioManager;
-
 public class MainActivity extends AppCompatActivity
-        implements OnTouchListener, SensorEventListener {
+        implements SensorEventListener {
 
-
-    // Used to load the 'native-lib' library on application startup.
-    static {
-        System.loadLibrary("native-lib");
-    }
 
     PowerManager.WakeLock wakeLock;
 
@@ -52,9 +38,9 @@ public class MainActivity extends AppCompatActivity
 
     private FrequencyBuffer[] bufferPool = new FrequencyBuffer[8];
 
-    private int count = 0;
+    public static int count = 0;
 
-    private TextView textView;
+
 
     boolean firstStep = true;
 
@@ -65,8 +51,11 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
+        //super scary stuff
+        //uses java class background changer as its layout instead of an xml layout
+        View view = new MainGUI(this);
+        setContentView(view);
         Intent intent = getIntent();
         rootNote = intent.getIntExtra(ConfigurationActivity.STARTING_NOTE_STRING, 1);
 
@@ -90,42 +79,6 @@ public class MainActivity extends AppCompatActivity
         bufferPool[7] = note8;
 
 
-        // Example of a call to a native method
-        //TextView tv = (TextView) findViewById(R.id.sample_text);
-        //tv.setText(stringFromJNI());
-
-
-        View layoutMain = findViewById(R.id.layoutMain);
-
-        // Set on touch listener
-        View v;
-
-        v = findViewById(R.id.button1);
-        verifyAndSetOnTouchListener(v);
-
-        v = findViewById(R.id.button2);
-        verifyAndSetOnTouchListener(v);
-
-        v = findViewById(R.id.button3);
-        verifyAndSetOnTouchListener(v);
-
-        v = findViewById(R.id.button4);
-        verifyAndSetOnTouchListener(v);
-
-        v = findViewById(R.id.button5);
-        verifyAndSetOnTouchListener(v);
-
-        v = findViewById(R.id.button6);
-        verifyAndSetOnTouchListener(v);
-
-        v = findViewById(R.id.button7);
-        verifyAndSetOnTouchListener(v);
-
-        v = findViewById(R.id.button8);
-        verifyAndSetOnTouchListener(v);
-
-        textView = (TextView) findViewById(R.id.mainSteps);
-
         mSensorManager = (SensorManager) getSystemService(this.SENSOR_SERVICE);
         mStepDetectorSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
 
@@ -136,37 +89,9 @@ public class MainActivity extends AppCompatActivity
         PowerManager mgr = (PowerManager)getSystemService(this.POWER_SERVICE);
         wakeLock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyWakeLock");
 
-
     }
 
-    @Override
-    /*
-     * This method is used for detecting touches,
-     * and distinguishing between presses and releases
-     */
-    public boolean onTouch(View v, MotionEvent event)
-    {
-        int action = event.getAction();
-        int id = v.getId();
 
-        switch (action)
-        {
-            case MotionEvent.ACTION_DOWN: // Button is held down, start playing the music
-
-                playById(id);
-                break;
-
-            case MotionEvent.ACTION_UP: // Button has been released. Stop playing the music
-
-                stopById(id);
-                break;
-
-            default:
-                return false;
-        }
-
-        return false;
-    }
 
     public void onSensorChanged(SensorEvent event) {
         Sensor sensor = event.sensor;
@@ -189,7 +114,7 @@ public class MainActivity extends AppCompatActivity
             bufferPool[count%8].play();
 
             this.count++;
-            textView.setText("Step Detector Detected : " + (count));
+
 
             firstStep = false;
         }
@@ -226,89 +151,6 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public void verifyAndSetOnTouchListener(View v)
-    {
-        if (v != null)
-            v.setOnTouchListener(this);
-    }
-
-    /**
-     * Begins playing buffer based on button id
-     */
-    public void playById(int id)
-    {
-        switch (id)
-        {
-            case R.id.button1:
-                note1.play();
-                break;
-            case R.id.button2:
-                note2.play();
-                break;
-            case R.id.button3:
-                note3.play();
-                break;
-            case R.id.button4:
-                note4.play();
-                break;
-            case R.id.button5:
-                note5.play();
-                break;
-            case R.id.button6:
-                note6.play();
-                break;
-            case R.id.button7:
-                note7.play();
-                break;
-            case R.id.button8:
-                note8.play();
-                break;
-            default:
-                return;
-        }
-    }
-
-    /**
-     * Stops buffer based on button id
-     */
-    public void stopById(int id)
-    {
-        switch (id)
-        {
-            case R.id.button1:
-                note1.stop();
-                break;
-            case R.id.button2:
-                note2.stop();
-                break;
-            case R.id.button3:
-                note3.stop();
-                break;
-            case R.id.button4:
-                note4.stop();
-                break;
-            case R.id.button5:
-                note5.stop();
-                break;
-            case R.id.button6:
-                note6.stop();
-                break;
-            case R.id.button7:
-                note7.stop();
-                break;
-            case R.id.button8:
-                note8.stop();
-                break;
-            default:
-                return;
-        }
-    }
-
-    /**
-     * A native method that is implemented by the 'native-lib' native library,
-     * which is packaged with this application.
-     */
-    public native String stringFromJNI();
 
     protected void onResume() {
         super.onResume();
