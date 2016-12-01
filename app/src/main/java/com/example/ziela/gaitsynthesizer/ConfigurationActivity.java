@@ -34,6 +34,8 @@ public class ConfigurationActivity extends AppCompatActivity implements SensorEv
     private SeekBar noteSelectBar;
     int startNote;
 
+    private static final int NOTESHIFT = 45;
+
 
 
     @Override
@@ -49,7 +51,7 @@ public class ConfigurationActivity extends AppCompatActivity implements SensorEv
         noteTextView = (TextView) findViewById(R.id.startNoteTextView);
         noteSelectBar = (SeekBar) findViewById(R.id.seekBar);
         startNote = noteSelectBar.getProgress(); //get his initial val
-        noteTextView.setText("The starting note will be " + (startNote+45)); //set initial text
+        noteTextView.setText("The starting note will be " + (startNote+NOTESHIFT)); //set initial text
         //scale him up by 1 b/c ppl are dumb and dont know counts start at 0
 
         noteSelectBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -57,7 +59,7 @@ public class ConfigurationActivity extends AppCompatActivity implements SensorEv
             @Override
             public void onProgressChanged(SeekBar seekBar, int seekBarValue, boolean fromUser) {
                 startNote = seekBarValue;
-                noteTextView.setText("The starting note will be " + (startNote+45)); //update the msg to user
+                noteTextView.setText("The starting note will be " + (startNote+NOTESHIFT)); //update the msg to user
                 ////scale him up by 1 b/c ppl are dumb and dont know counts start at 0
 
             }
