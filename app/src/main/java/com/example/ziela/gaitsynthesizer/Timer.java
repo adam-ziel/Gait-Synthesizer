@@ -28,7 +28,7 @@ public class Timer
         else
         {
             stop();
-            compare(); // compare timer deviations against tolerance
+            comparePastTwoStepIntervals();
             start();
         }
     }
@@ -64,22 +64,33 @@ public class Timer
      * then compares it against a tolerance value.
      * If outside the tolerance, all times are cleared, and the stepcount is reset.
      */
-    public void compare()
+    public void comparePastTwoStepIntervals()
     {
-        if (pastTwoStepIntervals[1] != 0) // implies there are two values in the buffer
+        if (bufferHasTwoValues())
         {
             deviation = (double) pastTwoStepIntervals[0] / pastTwoStepIntervals[1];
 
             MainActivity.setDeviationDisplay("Deviation: " +
                     String.format("%.1f", (deviation * 100) - 100) + "%");
 
-            if (Math.abs(1 - deviation) > tolerance) // reset if outside the tolerance
+            if (deviationIsOutsideTolerance())
             {
                 resetStepCountAndTimerBuffer();
             }
         }
     }
 
+
+     public boolean deviationIsOutsideTolerance()
+    {
+        return Math.abs(1 - deviation) > tolerance;
+    }
+
+
+    public boolean bufferHasTwoValues()
+    {
+        return pastTwoStepIntervals[1] != 0;
+    }
 
     /**
      * Protocol for handling steps that fall outside of the regularity tolerance

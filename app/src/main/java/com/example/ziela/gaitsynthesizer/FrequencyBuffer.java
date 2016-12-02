@@ -7,6 +7,7 @@ package com.example.ziela.gaitsynthesizer;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.util.Log;
 
 /**
  * Created by wigleyd on 11/13/2016.
@@ -22,9 +23,9 @@ public class FrequencyBuffer
 
     private double frequency;
 
-    private int sampleRateInHz = 44100; // cut as low as possible
+    private static int sampleRateInHz = 44100 / 4; // cut as low as possible
 
-    private int bufferSize = AudioTrack.getMinBufferSize(sampleRateInHz,
+    private static int bufferSize = AudioTrack.getMinBufferSize(sampleRateInHz,
                                                          AudioFormat.CHANNEL_OUT_MONO,
                                                          AudioFormat.ENCODING_PCM_8BIT);
 
@@ -35,6 +36,8 @@ public class FrequencyBuffer
      */
     public FrequencyBuffer(double frequency)
     {
+        //Log.d("BUFFSIZE", Integer.toString(bufferSize));
+
         this.frequency = frequency;
 
         initializeAudioTrack();
@@ -50,9 +53,13 @@ public class FrequencyBuffer
      */
     public void initializeAudioTrack()
     {
+//        audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRateInHz,
+//                AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT,
+//                bufferSize * 25, AudioTrack.MODE_STATIC);
+
         audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRateInHz,
                 AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT,
-                bufferSize * 25, AudioTrack.MODE_STATIC);
+                sampleRateInHz * 2, AudioTrack.MODE_STATIC);
 
         audioTrack.setVolume(AudioTrack.getMaxVolume());
     }
@@ -66,11 +73,17 @@ public class FrequencyBuffer
         waveTable = new double[sampleRateInHz];
         noteBuffer = new short[sampleRateInHz];
 
+//        double dTheta = 2.0 * Math.PI * frequency / 44100;
+//        double theta = 0;
+
         for (int i = 0; i < waveTable.length; i++)
         {
+//            waveTable[i] = Math.sin(theta);
             waveTable[i] = Math.sin((2.0 * Math.PI * i / (sampleRateInHz / frequency)));
 
             noteBuffer[i] = (short) (waveTable[i] * Short.MAX_VALUE);
+
+            //theta += dTheta;
         }
     }
 
@@ -81,7 +94,7 @@ public class FrequencyBuffer
     public void writeWaveToAudioTrack()
     {
         audioTrack.write(noteBuffer, 0, noteBuffer.length);
-        //audioTrack.setLoopPoints(0, noteBuffer.length, -1);
+        audioTrack.setLoopPoints(0, noteBuffer.length, -1);
     }
 
 
@@ -101,7 +114,7 @@ public class FrequencyBuffer
     {
         audioTrack.stop();
         audioTrack.reloadStaticData();
-        //audioTrack.setLoopPoints(0, noteBuffer.length, -1);
+        audioTrack.setLoopPoints(0, noteBuffer.length, -1);
     }
 
     /**

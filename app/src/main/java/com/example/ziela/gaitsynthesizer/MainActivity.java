@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity
 
     private boolean firstStep = true;
 
-    private TextView stepCountDisplay;
+    private static TextView stepCountDisplay;
 
     private static TextView timer1Display;
 
@@ -45,11 +45,22 @@ public class MainActivity extends AppCompatActivity
 
     private static TextView deviationDisplay;
 
+    public static final int ROOT = 0;
+
+    public static final int THIRD = 2;
+
+    public static final int FIFTH = 4;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        //super scary stuff
+        //uses java class background changer as its layout instead of an xml layout
+        View view = new MainGUI(this);
+        setContentView(view);
         setContentView(R.layout.activity_main);
 
         int rootNote = InputActivity.getInputNote(); // starting note in scale
@@ -86,7 +97,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     /**
-     * Simulated step detection using button
+     * Simulated step detect event using button
      */
     public boolean onTouch(View v, MotionEvent event)
     {
@@ -106,6 +117,10 @@ public class MainActivity extends AppCompatActivity
      */
     public void advanceNoteSequence()
     {
+//        if (stepCount > 8)
+//            playChord();
+//
+
         if (!firstStep)
             bufferPool[lastStep].stop();
 
@@ -116,6 +131,13 @@ public class MainActivity extends AppCompatActivity
         stepCount++;
 
         firstStep = false;
+    }
+
+    public void playChord()
+    {
+        bufferPool[ROOT].play();
+        bufferPool[THIRD].play();
+        bufferPool[FIFTH].play();
     }
 
 
@@ -224,6 +246,7 @@ public class MainActivity extends AppCompatActivity
             wakeLock.release(); //dont need to worry about keeping CPU on, the screen is back on
     }
 
+
     /**
      * David's
      */
@@ -233,6 +256,11 @@ public class MainActivity extends AppCompatActivity
 
         if (!wakeLock.isHeld())
             wakeLock.acquire(); //I want to keep going when the screen is off so keep CPU on
+    }
+
+    public static int getStepCount()
+    {
+        return stepCount;
     }
 
 

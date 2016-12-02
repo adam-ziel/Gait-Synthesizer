@@ -39,7 +39,7 @@ public class ConfigurationActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configuration);
 
-        // display loading gif in browser -- let's get off the web -- we're going offline
+        // display loading gif in browser -- but let's get off the web
         WebView webView = (WebView) findViewById(R.id.web_view);
         webView.setWebViewClient(new WebViewClient());
         webView.loadUrl("https://thomas.vanhoutte.be/miniblog/wp-content/uploads/light_blue_material_design_loading.gif");
@@ -50,7 +50,7 @@ public class ConfigurationActivity extends AppCompatActivity
         noteTextView = (TextView) findViewById(R.id.inputNoteTextView);
         textView = (TextView) findViewById(R.id.stepsTakenText);
 
-        // again, what are these doing
+        // again, what are these doing?
         mSensorManager = (SensorManager) getSystemService(this.SENSOR_SERVICE);
         mStepDetectorSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
 

@@ -13,6 +13,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.view.View.OnTouchListener;
 
+
 /**
  *
  */
@@ -20,13 +21,13 @@ public class InputActivity extends AppCompatActivity implements OnTouchListener
 {
     public static final int NOTE_OFFSET = 45; // scaling factor since SeekBar starts at 0
 
-    private FrequencyBuffer previewNote;
+    private FrequencyBuffer notePreview;
 
     private TextView inputNoteDisplay;
 
     private SeekBar noteSelectBar;
 
-    private static int inputNote;
+    private static int inputMIDINote;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -76,6 +77,7 @@ public class InputActivity extends AppCompatActivity implements OnTouchListener
         return false;
     }
 
+
     /**
      * Retrieves handles to all XML elements we need to modify
      */
@@ -91,15 +93,17 @@ public class InputActivity extends AppCompatActivity implements OnTouchListener
             v.setOnTouchListener(this);
     }
 
+
     /**
      * Interprets note from SeekBar value, then displays its value
      */
     public void getNoteValue()
     {
-        inputNote = noteSelectBar.getProgress() + NOTE_OFFSET;
+        inputMIDINote = noteSelectBar.getProgress() + NOTE_OFFSET;
 
-        inputNoteDisplay.setText("The starting note will be " + inputNote);
+        inputNoteDisplay.setText("The starting note will be " + inputMIDINote);
     }
+
 
     /**
      * Constructs new FrequencyBuffer at frequency corresponding to inputNote,
@@ -107,29 +111,31 @@ public class InputActivity extends AppCompatActivity implements OnTouchListener
      */
     public void createBufferAndPlay()
     {
-        previewNote = new FrequencyBuffer(MainActivity.midiNoteToFrequency(inputNote));
-        previewNote.play();
+        notePreview = new FrequencyBuffer(MainActivity.midiNoteToFrequency(inputMIDINote));
+        notePreview.play();
     }
 
-    /**
-     * Stops playing the buffer, then frees the data written to it
-     */
+
     public void stopBufferAndDeallocate()
     {
-        previewNote.stop();
-        previewNote.destroy();
+        notePreview.stop();
+        notePreview.destroy();
     }
+
 
     public static int getInputNote()
     {
-        return inputNote;
+        return inputMIDINote;
     }
+
 
     /**
      * Transition to next activity, and kill this one
      */
     public void transitionToCalibrationActivity()
     {
+        stopBufferAndDeallocate();
+
         Intent configuration = new Intent(InputActivity.this, ConfigurationActivity.class);
 
         InputActivity.this.startActivity(configuration);
