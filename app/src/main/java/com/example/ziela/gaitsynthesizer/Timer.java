@@ -116,6 +116,15 @@ public class Timer
         pastTwoStepIntervals[1] = 0;
     }
 
+    public double getTimer1()
+    {
+        return (double) pastTwoStepIntervals[0];
+    }
+
+    public double getTimer2()
+    {
+        return (double) pastTwoStepIntervals[1];
+    }
 
     /**
      * Updates the TextView instances in MainActivity

@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity
         //uses java class background changer as its layout instead of an xml layout
         View view = new MainGUI(this);
         setContentView(view);
-        setContentView(R.layout.activity_main);
+        //setContentView(R.layout.activity_main);
 
         int rootNote = InputActivity.getInputNote(); // starting note in scale
 
