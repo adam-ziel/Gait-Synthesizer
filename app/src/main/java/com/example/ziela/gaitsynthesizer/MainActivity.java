@@ -263,6 +263,11 @@ public class MainActivity extends AppCompatActivity
         return stepCount;
     }
 
+    public boolean getFirstStep()
+    {
+        return getFirstStep();
+    }
+
 
     public static void setDeviationDisplay(String message) { deviationDisplay.setText(message); }
 

@@ -43,7 +43,7 @@ public class MainGUI extends View {
 
         canvas.drawColor(Color.WHITE);
 
-        for (int i =0; i < 8; i ++){
+        for (int i = 0; i < 8; i ++){
             paint.setColor(Color.GRAY);
             if (i != (MainActivity.getStepCount()%8)) {
                 paint.setColor(Color.GRAY); // Set the color back to gray.
@@ -57,7 +57,6 @@ public class MainGUI extends View {
         }
         //can draw text in this as well if we want metrics or other text stuff
         invalidate(); //Tell Android the area needs to be redrawn
-
     }
 
     /**
