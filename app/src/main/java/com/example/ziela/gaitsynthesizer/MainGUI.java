@@ -32,6 +32,7 @@ public class MainGUI extends View {
 
         // create the Paint object
         paint = new Paint();
+        paint.setTextSize(80);
     }
 
     @Override
@@ -40,12 +41,13 @@ public class MainGUI extends View {
       * than XML stuff
      */
     protected void onDraw(Canvas canvas) {
+        int localCounter= MainActivity.getStepCount();
 
         canvas.drawColor(Color.WHITE);
 
         for (int i = 0; i < 8; i ++){
             paint.setColor(Color.GRAY);
-            if (i != (MainActivity.getStepCount()%8)) {
+            if (i != ((MainActivity.getStepCount())%8)) {
                 paint.setColor(Color.GRAY); // Set the color back to gray.
                                             // We are not on this circle
                 canvas.drawCircle(circleXPos[i], circleYPos[i], radius, paint);
@@ -55,6 +57,15 @@ public class MainGUI extends View {
                 canvas.drawCircle(circleXPos[i], circleYPos[i], radius, paint);
             }
         }
+        canvas.drawText("Touch anywhere to play", 100, 80, paint);
+
+        canvas.drawText("Steps detected: ", 100, 200, paint);
+        canvas.drawText(Integer.toString(MainActivity.getStepCount()), 800, 200, paint);
+
+        canvas.drawText("Timer 1:" , 80, circleYPos[4] + 300, paint);
+        //canvas.drawText(Integer.toString(Timer.) , 100, circleYPos[7] + 80, paint);
+
+        canvas.drawText("Timer 2:" , 860, circleYPos[4] + 300, paint);
         //can draw text in this as well if we want metrics or other text stuff
         invalidate(); //Tell Android the area needs to be redrawn
     }

@@ -62,14 +62,14 @@ public class MainActivity extends AppCompatActivity
         View view = new MainGUI(this);
         setContentView(view);
         //setContentView(R.layout.activity_main);
-
+        view.setOnTouchListener(this);
         int rootNote = InputActivity.getInputNote(); // starting note in scale
 
         scaleFrequencies = populateScale(rootNote, majorScaleSteps);
 
         createFrequencyBufferForEachScaleIndex();
 
-        getXMLHandles();
+        //getXMLHandles();
 
         prepareStepDetector();
 
@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity
         bufferPool[stepCount%8].play();
         lastStep = stepCount%8;
 
-        stepCountDisplay.setText("Step Detector Detected: " + stepCount);
+//        stepCountDisplay.setText("Step Detector Detected: " + stepCount);
         stepCount++;
 
         firstStep = false;
@@ -196,6 +196,7 @@ public class MainActivity extends AppCompatActivity
     /**
      * Retrieves handles to all XML elements we need to modify
      */
+    /*
     public void getXMLHandles()
     {
         stepCountDisplay = (TextView) findViewById(R.id.mainSteps);
@@ -205,9 +206,10 @@ public class MainActivity extends AppCompatActivity
 
         View v = findViewById(R.id.simulatorButton);
 
+
         if (v != null)
             v.setOnTouchListener(this);
-    }
+    }*/
 
 
     /**
@@ -261,11 +263,6 @@ public class MainActivity extends AppCompatActivity
     public static int getStepCount()
     {
         return stepCount;
-    }
-
-    public boolean getFirstStep()
-    {
-        return getFirstStep();
     }
 
 

@@ -70,8 +70,8 @@ public class Timer
         {
             deviation = (double) pastTwoStepIntervals[0] / pastTwoStepIntervals[1];
 
-            MainActivity.setDeviationDisplay("Deviation: " +
-                    String.format("%.1f", (deviation * 100) - 100) + "%");
+//            MainActivity.setDeviationDisplay("Deviation: " +
+//                    String.format("%.1f", (deviation * 100) - 100) + "%");
 
             if (deviationIsOutsideTolerance())
             {
@@ -131,7 +131,7 @@ public class Timer
      */
     public void updateTimerDisplays()
     {
-        MainActivity.setTimer1Display("Timer 1:" + pastTwoStepIntervals[0]);
-        MainActivity.setTimer2Display("Timer 2: " + pastTwoStepIntervals[1]);
+//        MainActivity.setTimer1Display("Timer 1:" + pastTwoStepIntervals[0]);
+//        MainActivity.setTimer2Display("Timer 2: " + pastTwoStepIntervals[1]);
     }
 }
