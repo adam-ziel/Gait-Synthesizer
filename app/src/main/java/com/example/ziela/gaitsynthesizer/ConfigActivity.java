@@ -24,9 +24,9 @@ public class ConfigActivity extends StepDetector {
         initializeStepListener();
 
         // get button handle and set listener
-        View v = findViewById(R.id.bypassButton);
+        View v = findViewById( R.id.bypassButton );
         if (v != null)
-            v.setOnTouchListener(this);
+            v.setOnTouchListener( this );
     }
 
     @Override
@@ -59,13 +59,16 @@ public class ConfigActivity extends StepDetector {
             finish();
         }
     }
+
     protected void onResume() {
         super.onResume();
         sensorManager.registerListener( this, stepDetectorSensor,
                                          SensorManager.SENSOR_DELAY_FASTEST );
     }
+
     protected void onStop() {
         super.onStop();
         sensorManager.unregisterListener( this, stepDetectorSensor );
     }
+
 }

@@ -2,7 +2,6 @@ package com.example.ziela.gaitsynthesizer;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Movie;
 import android.util.AttributeSet;
 import android.view.View;

@@ -5,11 +5,11 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.View;
+import java.util.Locale;
 
 public class MainGUI extends View {
 
     private Paint paint;
-
     private static final int radius = 120;
     private static final float START_X_POS = 700;
     private static final float START_Y_POS = 620;
@@ -20,7 +20,7 @@ public class MainGUI extends View {
 
     public MainGUI( Context context ) {
         super( context );
-        instantiateCircleCoordinates(); // populate coordinate arrays
+        initializeCircleCoordinates(); // populate coordinate arrays
         paint = new Paint();
         paint.setTextSize( 80 );
     }
@@ -33,7 +33,7 @@ public class MainGUI extends View {
         canvas.drawColor(Color.WHITE);
         for (int i = 0; i < 8; i ++){
             paint.setColor(Color.GRAY); // Gray circles indicate non-active tones
-            if (i != ((MainActivity.getStepCount())%8)) {
+            if (i != ((MainActivity.getCurrentStepCount())%8)) {
                 paint.setColor(Color.GRAY); // Reset all non-active tones to gray
                 canvas.drawCircle(circleXPos[i], circleYPos[i], radius, paint);
             }else {
@@ -43,12 +43,16 @@ public class MainGUI extends View {
             }
         }
         canvas.drawText("Touch anywhere to play", 100, 80, paint);
-        canvas.drawText( String.format("Steps detected: %d", MainActivity.getStepCount() ),
-                         100, 200, paint);
-        canvas.drawText( String.format("Timer 1: %d", (int) Timer.getTimer1() ),
-                         80, circleYPos[4] + 300, paint);
-        canvas.drawText( String.format("Timer 2: %d", (int) Timer.getTimer2() ),
-                        860, circleYPos[4] + 300, paint);
+        canvas.drawText( String.format( Locale.getDefault(), "Current Consecutive Steps: %d",
+                         MainActivity.getCurrentStepCount() ), 100, 200, paint);
+        /*canvas.drawText( String.format( Locale.getDefault(), "Maximum Consecutive Steps: %d",
+                MainActivity.getMaxStepCount() ), 100, 220, paint);
+        canvas.drawText( String.format( Locale.getDefault(), "Percent of steps within Tolerance: %d %",
+                MainActivity.getPercentGood() ), 100, 240, paint);*/
+        canvas.drawText( String.format( Locale.getDefault(), "Timer 1: %d",
+                         (int) Timer.getTimer1() ), 80, circleYPos[4] + 300, paint);
+        canvas.drawText( String.format( Locale.getDefault(), "Timer 2: %d",
+                         (int) Timer.getTimer2() ), 860, circleYPos[4] + 300, paint);
         invalidate(); // redraw canvas
     }
 
@@ -60,7 +64,7 @@ public class MainGUI extends View {
      *    5  3      5(Xstart - 1*Xoff, Ystart + 3*Yoff) 3(Xstart + 1*Xoff, Ystart + 3*Yoff)
      *      4       4(Xstart, Ystart + 4*Yoff)
      */
-    private void instantiateCircleCoordinates(){
+    private void initializeCircleCoordinates(){
         //x coordinates
         // loop 0,1,2 and 4,5,6 diagonals : x offset increments are proportional to circle number
         for( int i = 0; i < 3; i++ ){

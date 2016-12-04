@@ -7,21 +7,21 @@ package com.example.ziela.gaitsynthesizer;
  */
 public class Timer {
     private static double tolerance = 0.15;
-    private static boolean TIMER_IDLE = true;
+    private static boolean isTimerIdle = true;
     private static long startTime;
     private static long[] stepIntervals = {0, 0};
     private static double deviation;
 
-    public static void resetMetrics() { // TODO move out of class
-        MainActivity.resetStepCount();
+    protected static void resetMetrics() { // TODO move out of class
+        MainActivity.resetCurrentStepCount();
         resetTimer();
     }
 
     /**
      * Timer routine called every time a step is detected
      */
-    public static void onStep() {
-        if (TIMER_IDLE) // i.e. there's no active timer we have to stop
+    protected static void onStep() {
+        if ( isTimerIdle ) // i.e. there's no active timer we have to stop
             start();
         else {
             stop();
@@ -33,16 +33,16 @@ public class Timer {
     /**
      * Records start time, and puts down TIMER_IDLE flag
      */
-    public static void start() {
+    private static void start() {
         startTime = System.currentTimeMillis();
-        TIMER_IDLE = false;
+        isTimerIdle = false;
     }
 
     /**
      * Right shifts array contents to make room for new time,
      * then places the new step interval in index zero
      */
-    public static void stop() { // TODO use mod to eliminate double rewrites
+    private static void stop() { // TODO use mod to eliminate double rewrites
         stepIntervals[1] = stepIntervals[0]; // shift right to vacate index 0
         stepIntervals[0] = System.currentTimeMillis() - startTime;
     }
@@ -59,21 +59,38 @@ public class Timer {
                 resetMetrics(); // TODO update to reflect moved method
         }
     }
+
     public static boolean withinTolerance() {
         return Math.abs(1 - deviation) <= tolerance;
     }
-    public static void resetTimer() { // TODO should not be public?
+
+    protected static void resetTimer() {
         stepIntervals[0] = 0;
         stepIntervals[1] = 0;
-        TIMER_IDLE = true;
+        isTimerIdle = true;
     }
+
     public static double getTimer1() {
         return (double) stepIntervals[0];
     }
+
     public static double getTimer2() {
         return (double) stepIntervals[1];
     }
+
     public static double getDeviation() {
         return deviation;
     }
+
+    public static boolean getIsTimerIdle(){
+        return isTimerIdle;
+    }
+
+    public static double getTolerance(){
+        return tolerance;
+    }
+    protected static void setTolerance( double newTolerance ){
+        tolerance = newTolerance;
+    }
+
 }

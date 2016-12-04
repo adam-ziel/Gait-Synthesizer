@@ -46,7 +46,7 @@ public class StepDetector extends AppCompatActivity implements SensorEventListen
      * it to register an event listener for the phones default step detector at the sensors fastest
      * sampling speed.
      */
-    public void initializeStepListener() {
+    protected void initializeStepListener() {
         sensorManager = (SensorManager) getSystemService( SENSOR_SERVICE );
         stepDetectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR );
         sensorManager.registerListener( this, stepDetectorSensor, SensorManager.SENSOR_DELAY_FASTEST );

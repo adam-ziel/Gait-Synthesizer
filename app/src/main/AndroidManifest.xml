@@ -12,7 +12,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".StartActivity">
+        <activity android:name=".HomeActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -21,6 +21,8 @@
         </activity>
 
         <activity android:name=".MainActivity" />
+        <activity android:name=".InputActivity" />
+        <activity android:name=".StartActivity" />
         <activity android:name=".ConfigActivity" />
     </application>
 
