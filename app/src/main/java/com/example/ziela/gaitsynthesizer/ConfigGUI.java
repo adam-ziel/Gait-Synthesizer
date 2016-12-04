@@ -3,7 +3,6 @@ package com.example.ziela.gaitsynthesizer;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.Movie;
 import android.util.AttributeSet;
 import android.view.View;
@@ -12,14 +11,24 @@ import java.io.InputStream;
 
 public class ConfigGUI extends View {
 
-    private Paint paint;
     private Movie movie;
     private long startTime = 0;
-    private int movieId;
 
+    public ConfigGUI( Context context ){
+        super( context );
+        initializeView();
+    }
     public ConfigGUI( Context context, AttributeSet attrs ){
         super( context, attrs );
-        InputStream inputStream = getResources().openRawResource( R.drawable.loading );
+        initializeView();
+    }
+    public ConfigGUI( Context context, AttributeSet attrs, int defStyle ) {
+        super(context, attrs, defStyle);
+        initializeView();
+    }
+
+    private void initializeView(){
+        InputStream inputStream = getResources().openRawResource( R.raw.loading );
         movie = Movie.decodeStream( inputStream );
     }
 
@@ -31,13 +40,11 @@ public class ConfigGUI extends View {
         long currTime = android.os.SystemClock.uptimeMillis();
         if( startTime == 0 )
             startTime = currTime;
-        int playTime = (int)( (currTime - startTime)%movie.duration() );
-        movie.setTime( playTime );
-        movie.draw( canvas, 100, 100 );
-        canvas.drawColor( Color.WHITE );
-        invalidate(); // redraw canvas
-    }
-    public int getMovieId(){
-        return movieId;
+        if( movie != null ) {
+            int playTime = (int)( (currTime - startTime)%movie.duration() );
+            movie.setTime( playTime );
+            movie.draw( canvas, 500, 500 );
+            invalidate(); // redraw canvas
+        }
     }
 }

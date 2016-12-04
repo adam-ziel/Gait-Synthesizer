@@ -1,5 +1,6 @@
 package com.example.ziela.gaitsynthesizer;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.view.View;

@@ -7,8 +7,6 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 /**
  * This class will be used for setting up the pedometer.
@@ -21,14 +19,7 @@ public class ConfigActivity extends StepDetector {
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
-        setContentView(R.layout.activity_configuration);
-
-        // TODO gif without internet load
-        WebView webView = (WebView) findViewById(R.id.web_view);
-        webView.setWebViewClient(new WebViewClient());
-        webView.loadUrl("https://thomas.vanhoutte.be/miniblog/wp-content/uploads/light_blue_material_design_loading.gif");
-        webView.getSettings().setLoadWithOverviewMode(true);
-        webView.getSettings().setUseWideViewPort(true);
+        setContentView( R.layout.activity_config );
 
         initializeStepListener();
 
