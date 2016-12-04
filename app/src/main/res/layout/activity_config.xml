@@ -31,8 +31,9 @@
     <com.example.ziela.gaitsynthesizer.ConfigGUI
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:layout_marginBottom="140dp"
+        android:layout_centerVertical="true"
+        android:layout_marginTop="70dp"
+        android:layout_marginBottom="100dp"
         components:src="@raw/loading"
         android:id="@+id/configGUI"
         android:layout_alignParentTop="true"
@@ -44,7 +45,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="99dp"
+        android:layout_marginBottom="30dp"
         android:id="@+id/bypassButton" />
 
 </RelativeLayout>

@@ -43,7 +43,8 @@ public class ConfigGUI extends View {
         if( movie != null ) {
             int playTime = (int)( (currTime - startTime)%movie.duration() );
             movie.setTime( playTime );
-            movie.draw( canvas, 500, 500 );
+            canvas.scale( (float) 4.5, (float) 4.5 );
+            movie.draw( canvas, 0, 0 );
             invalidate(); // redraw canvas
         }
     }
