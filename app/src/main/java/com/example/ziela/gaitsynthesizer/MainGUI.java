@@ -25,6 +25,8 @@ public class MainGUI extends View {
     private static final float X_POS_OFFSET = 200;
     private static final float Y_POS_OFFSET = X_POS_OFFSET;
 
+    private int lastStep = 0;
+
 
     public MainGUI(Context context) {
         super(context);
@@ -41,13 +43,14 @@ public class MainGUI extends View {
       * than XML stuff
      */
     protected void onDraw(Canvas canvas) {
-        int localCounter= MainActivity.getStepCount();
+        int localCounter;
+        localCounter = MainActivity.getFirstStep() ? MainActivity.getStepCount() : MainActivity.getStepCount()-1;
 
         canvas.drawColor(Color.WHITE);
 
         for (int i = 0; i < 8; i ++){
             paint.setColor(Color.GRAY);
-            if (i != ((MainActivity.getStepCount())%8)) {
+            if (i != (localCounter%8)) {
                 paint.setColor(Color.GRAY); // Set the color back to gray.
                                             // We are not on this circle
                 canvas.drawCircle(circleXPos[i], circleYPos[i], radius, paint);
@@ -57,17 +60,20 @@ public class MainGUI extends View {
                 canvas.drawCircle(circleXPos[i], circleYPos[i], radius, paint);
             }
         }
+        paint.setColor(Color.BLACK);
         canvas.drawText("Touch anywhere to play", 100, 80, paint);
 
         canvas.drawText("Steps detected: ", 100, 200, paint);
         canvas.drawText(Integer.toString(MainActivity.getStepCount()), 800, 200, paint);
 
         canvas.drawText("Timer 1:" , 80, circleYPos[4] + 300, paint);
-        //canvas.drawText(Integer.toString(Timer.) , 100, circleYPos[7] + 80, paint);
+        canvas.drawText(Double.toString(Timer.getTimer1()) ,440 , circleYPos[4] + 300, paint);
 
         canvas.drawText("Timer 2:" , 860, circleYPos[4] + 300, paint);
+        canvas.drawText(Double.toString(Timer.getTimer2()) ,1200 , circleYPos[4] + 300, paint);
         //can draw text in this as well if we want metrics or other text stuff
         invalidate(); //Tell Android the area needs to be redrawn
+
     }
 
     /**
@@ -100,4 +106,6 @@ public class MainGUI extends View {
         circleYPos[6] = circleYPos[2]; //far left y pos is far right y pos
         circleYPos[7] = circleYPos[1]; //top left y pos is top right y pos
     }
+
+
 }

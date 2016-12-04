@@ -9,7 +9,7 @@ public class Timer
 {
     private long startTime;
 
-    private long[] pastTwoStepIntervals = {0, 0};
+    private static long[] pastTwoStepIntervals = {0, 0};
 
     private double tolerance = 0.1;
 
@@ -116,12 +116,12 @@ public class Timer
         pastTwoStepIntervals[1] = 0;
     }
 
-    public double getTimer1()
+    public static double getTimer1()
     {
         return (double) pastTwoStepIntervals[0];
     }
 
-    public double getTimer2()
+    public static double getTimer2()
     {
         return (double) pastTwoStepIntervals[1];
     }
