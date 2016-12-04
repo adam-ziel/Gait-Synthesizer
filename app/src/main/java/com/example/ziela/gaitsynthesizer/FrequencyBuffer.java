@@ -23,7 +23,7 @@ public class FrequencyBuffer
 
     private double frequency;
 
-    private static int sampleRateInHz = 44100 / 4; // cut as low as possible
+    private static int sampleRateInHz = 44100; // cut as low as possible
 
     private static int bufferSize = AudioTrack.getMinBufferSize(sampleRateInHz,
                                                          AudioFormat.CHANNEL_OUT_MONO,

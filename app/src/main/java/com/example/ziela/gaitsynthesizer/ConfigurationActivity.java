@@ -39,12 +39,6 @@ public class ConfigurationActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configuration);
 
-        // display loading gif in browser -- but let's get off the web
-        WebView webView = (WebView) findViewById(R.id.web_view);
-        webView.setWebViewClient(new WebViewClient());
-        webView.loadUrl("https://thomas.vanhoutte.be/miniblog/wp-content/uploads/light_blue_material_design_loading.gif");
-        webView.getSettings().setLoadWithOverviewMode(true);
-        webView.getSettings().setUseWideViewPort(true);
 
         // get XML handles
         noteTextView = (TextView) findViewById(R.id.inputNoteTextView);

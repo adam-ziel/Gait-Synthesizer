@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity
 
     private int lastStep;
 
-    private boolean firstStep = true;
+    private static boolean firstStep = true;
 
     private static TextView stepCountDisplay;
 
@@ -263,6 +263,11 @@ public class MainActivity extends AppCompatActivity
     public static int getStepCount()
     {
         return stepCount;
+    }
+
+    public static boolean getFirstStep()
+    {
+        return firstStep;
     }
 
 

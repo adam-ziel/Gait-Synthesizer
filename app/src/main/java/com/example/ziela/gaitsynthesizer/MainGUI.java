@@ -1,103 +1,90 @@
 package com.example.ziela.gaitsynthesizer;
 
-/**
- * Created by wigleyd on 11/28/2016.
- */
-
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.View;
+import java.util.Locale;
 
 public class MainGUI extends View {
 
     private Paint paint;
-
     private static final int radius = 120;
-
-    private float[] circleXPos = new float[8];
-    private float[] circleYPos = new float[8];
-
     private static final float START_X_POS = 700;
     private static final float START_Y_POS = 620;
-
     private static final float X_POS_OFFSET = 200;
-    private static final float Y_POS_OFFSET = X_POS_OFFSET;
+    private static final float Y_POS_OFFSET = 200;
+    private static float[] circleXPos = new float[8]; // X coordinates of circles
+    private static float[] circleYPos = new float[8]; // Y coordinates of circles
 
-
-    public MainGUI(Context context) {
-        super(context);
-        instantiateCircleCoordinates();
-
-        // create the Paint object
+    public MainGUI( Context context ) {
+        super( context );
+        initializeCircleCoordinates(); // populate coordinate arrays
         paint = new Paint();
-        paint.setTextSize(80);
+        paint.setTextSize( 80 );
     }
 
     @Override
     /*
-     * Creating my own onDraw method to flag to android to draw the screen using this logic rather
-      * than XML stuff
+     * Draws GUI using canvas rather than XML files
      */
     protected void onDraw(Canvas canvas) {
-        int localCounter= MainActivity.getStepCount();
-
         canvas.drawColor(Color.WHITE);
+        int localCounter;
+        if(MainActivity.getFirstStep()){
+            localCounter = MainActivity.getStepCount();
+        }else{
+            localCounter = MainActivity.getStepCount() - 1;
+        }
 
         for (int i = 0; i < 8; i ++){
-            paint.setColor(Color.GRAY);
-            if (i != ((MainActivity.getStepCount())%8)) {
-                paint.setColor(Color.GRAY); // Set the color back to gray.
-                                            // We are not on this circle
+            paint.setColor(Color.GRAY); // Gray circles indicate non-active tones
+            if (i != ((localCounter)%8)) {
+                paint.setColor(Color.GRAY); // Reset all non-active tones to gray
                 canvas.drawCircle(circleXPos[i], circleYPos[i], radius, paint);
             }else {
-                paint.setColor(Color.GREEN); //set color to green to show this circle is different.
-                                             //Represents our current tone
+                paint.setColor(Color.GREEN); // Set active tone to green
                 canvas.drawCircle(circleXPos[i], circleYPos[i], radius, paint);
+                paint.setColor(Color.GRAY);
             }
         }
         canvas.drawText("Touch anywhere to play", 100, 80, paint);
-
-        canvas.drawText("Steps detected: ", 100, 200, paint);
-        canvas.drawText(Integer.toString(MainActivity.getStepCount()), 800, 200, paint);
-
-        canvas.drawText("Timer 1:" , 80, circleYPos[4] + 300, paint);
-        //canvas.drawText(Integer.toString(Timer.) , 100, circleYPos[7] + 80, paint);
-
-        canvas.drawText("Timer 2:" , 860, circleYPos[4] + 300, paint);
-        //can draw text in this as well if we want metrics or other text stuff
-        invalidate(); //Tell Android the area needs to be redrawn
+        canvas.drawText( String.format( Locale.getDefault(), "Current Consecutive Steps: %d",
+                         MainActivity.getStepCount() ), 100, 200, paint);
+        /*canvas.drawText( String.format( Locale.getDefault(), "Maximum Consecutive Steps: %d",
+                MainActivity.getMaxStepCount() ), 100, 220, paint);
+        canvas.drawText( String.format( Locale.getDefault(), "Percent of steps within Tolerance: %d %",
+                MainActivity.getPercentGood() ), 100, 240, paint);*/
+        canvas.drawText( String.format( Locale.getDefault(), "Timer 1: %d",
+                         (int) Timer.getTimer1() ), 80, circleYPos[4] + 300, paint);
+        canvas.drawText( String.format( Locale.getDefault(), "Timer 2: %d",
+                         (int) Timer.getTimer2() ), 860, circleYPos[4] + 300, paint);
+        invalidate(); // redraw canvas
     }
 
     /**
      * Method that handles defining pixel coordinates on 8 circles
-     * Prepare to get confused. Im going to draw you a pic just so its easier to follow
-     *      O       THIS HAS THE SAME X AS BOTTOM AND ITS OWN Y
-     *    O  O      THESE HAVE SAME Y AND SAME X AS SIMILAR ROW AT BOTTOM
-     *   O    O     THESE HAVE SAME Y AND THEIR OWN X
-     *    O  O      THESE HAVE SAME Y AND SAME X AS SIMILAR ROW AT TOP
-     *      O       THIS HAS THE SAME X AS TOP AND ITS OWN Y
+     *      0       0(Xstart, Ystart)
+     *    7  1      7(Xstart - 1*Xoff, Ystart + 1*Yoff) 1(Xstart + 1*Xoff, Ystart + 1*Yoff)
+     *   6    2     6(Xstart - 2*Xoff, Ystart + 2*Yoff) 2(Xstart + 1*Xoff, Ystart + 2*Yoff)
+     *    5  3      5(Xstart - 1*Xoff, Ystart + 3*Yoff) 3(Xstart + 1*Xoff, Ystart + 3*Yoff)
+     *      4       4(Xstart, Ystart + 4*Yoff)
      */
-    private void instantiateCircleCoordinates(){
+    private void initializeCircleCoordinates(){
         //x coordinates
-        circleXPos[0] = START_X_POS; //top circle
-        circleXPos[1] = START_X_POS + X_POS_OFFSET; // top right
-        circleXPos[2] = START_X_POS + 2 * X_POS_OFFSET; //far right
-        circleXPos[3] = circleXPos[1]; //bottom right
-        circleXPos[4] = circleXPos[0]; //bottom circle
-        circleXPos[5] = circleXPos[0] - X_POS_OFFSET; //bottom left
-        circleXPos[6] = circleXPos[0] - 2 * X_POS_OFFSET; //far left
-        circleXPos[7] = circleXPos[5]; //top left
-
+        // loop 0,1,2 and 4,5,6 diagonals : x offset increments are proportional to circle number
+        for( int i = 0; i < 3; i++ ){
+            circleXPos[ i ] = START_X_POS + i * X_POS_OFFSET;
+            circleXPos[ i+4 ] = START_X_POS - i * X_POS_OFFSET;
+        }
+        circleXPos[3] = START_X_POS + 1 * X_POS_OFFSET;
+        circleXPos[7] = START_X_POS - 1 * X_POS_OFFSET;
         //y coordinates
-        circleYPos[0] = START_Y_POS; //top circle
-        circleYPos[1] = START_Y_POS + Y_POS_OFFSET; //top right circle
-        circleYPos[2] = START_Y_POS + 2 * Y_POS_OFFSET; //far right circle
-        circleYPos[3] = START_Y_POS + 3 * Y_POS_OFFSET; //bottom right circle
-        circleYPos[4] = START_Y_POS + 4 * Y_POS_OFFSET; //bottom circle
-        circleYPos[5] = circleYPos[3]; //bottom left y pos is equal to bottom right y pos
-        circleYPos[6] = circleYPos[2]; //far left y pos is far right y pos
-        circleYPos[7] = circleYPos[1]; //top left y pos is top right y pos
+        //loop 0,1,2,3 and 4,5,6,7 : y offset increments are proportional to circle number
+        for( int j = 0; j < 4; j++ ) {
+            circleYPos[ j ] = START_Y_POS + j * Y_POS_OFFSET;
+            circleYPos[ j+4 ] = START_Y_POS - (j-4) * Y_POS_OFFSET;
+        }
     }
 }

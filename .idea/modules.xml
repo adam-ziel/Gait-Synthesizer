@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Gait-Synthesizer.iml" filepath="$PROJECT_DIR$/Gait-Synthesizer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Gait-Synthesizer-Final.iml" filepath="$PROJECT_DIR$/Gait-Synthesizer-Final.iml" />
       <module fileurl="file://$PROJECT_DIR$/GaitSynthesizer.iml" filepath="$PROJECT_DIR$/GaitSynthesizer.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
