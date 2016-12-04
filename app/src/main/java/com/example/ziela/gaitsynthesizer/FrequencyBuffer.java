@@ -13,88 +13,63 @@ import android.media.AudioTrack;
  */
 
 public class FrequencyBuffer {
-
-    private double frequency;
-
-    private int sampleRateInHz = 44100; // cut as low as possible
-
-    public AudioTrack audioTrack;
-
+    private AudioTrack audioTrack;
     private double[] waveTable;
-
-    public short[] noteBuffer;
-
-    public int length;
-
+    private short[] noteBuffer;
+    private double frequency;
+    private static int sampleRateInHz = 44100 / 4; // cut as low as possible
+    private static int bufferSize = AudioTrack.getMinBufferSize(sampleRateInHz,
+                                                         AudioFormat.CHANNEL_OUT_MONO,
+                                                         AudioFormat.ENCODING_PCM_8BIT);
 
     /**
-     * Determine buffer size
-     * Construct audioTrack
-     * Write tracks
+     * Constructs FrequencyBuffer instance at supplied frequency
      *
-     /**
-     * Constructor used for unspecified volume amount
      * @param frequency
      */
-    public FrequencyBuffer(double frequency)
-    {
+    public FrequencyBuffer(double frequency) {
+        //Log.d("BUFFSIZE", Integer.toString(bufferSize));
         this.frequency = frequency;
-
-        int mBufferSize = AudioTrack.getMinBufferSize(sampleRateInHz,
-                AudioFormat.CHANNEL_OUT_MONO,
-                AudioFormat.ENCODING_PCM_8BIT);
-
-        audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRateInHz,
-                AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT,
-                mBufferSize * 25, AudioTrack.MODE_STATIC);
-
-        audioTrack.setStereoVolume(AudioTrack.getMaxVolume(), AudioTrack.getMaxVolume());
-
-        instantiateValues();
-
-        writeTheBuffer();
+        initializeAudioTrack();
+        buildWave();
+        writeWaveToAudioTrack();
     }
 
-//    /**
-//     * Constructor used for specifiying a volume
-//     * @param frequency Frequency this buffer will output
-//     * @param intervals signal quality of the wave. More intervals is higher quality. Imagine a rahemian sum
-//     * @param leftVolume volume amount for the left speaker
-//     * @param rightVolume volume amount for the right speaker
-//     */
-//    public FrequencyBuffer(double frequency, int intervals, float leftVolume, float rightVolume){
-//
-//        this.frequency = frequency;
-//        this.sampleRateInHz  = intervals;
-//
-//        int mBufferSize = AudioTrack.getMinBufferSize(intervals,
-//                AudioFormat.CHANNEL_OUT_MONO,
-//                AudioFormat.ENCODING_PCM_8BIT);
-//
-//        audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, intervals,
+    /**
+     *
+     */
+    public void initializeAudioTrack() {
+//        audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRateInHz,
 //                AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT,
-//                mBufferSize, AudioTrack.MODE_STREAM);
-//
-//        setVolume(leftVolume,rightVolume);
-//        instantiateValues();
-//        writeTheBuffer();
-//    }
+//                bufferSize * 25, AudioTrack.MODE_STATIC);
+        audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRateInHz,
+                AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT,
+                sampleRateInHz * 2, AudioTrack.MODE_STATIC);
+        audioTrack.setVolume(AudioTrack.getMaxVolume());
+    }
 
     /**
      * Instantiate all of the sound values.
      */
-    private void instantiateValues()
-    {
+    public void buildWave() {
         waveTable = new double[sampleRateInHz];
         noteBuffer = new short[sampleRateInHz];
+//        double dTheta = 2.0 * Math.PI * frequency / 44100;
+//        double theta = 0;
 
-        for (int i = 0; i < waveTable.length; i++)
-        {
-            waveTable[i] = Math.sin((2.0 * Math.PI * i / (sampleRateInHz / frequency)));
-
+        for (int i = 0; i < waveTable.length; i++) {
+//            waveTable[i] = Math.sin(theta);
+//            waveTable[i] = Math.sin((2.0 * Math.PI * i / (sampleRateInHz / frequency)));
+            waveTable[i] = Math.sin( i * 2.0 * Math.PI * frequency / sampleRateInHz );
             noteBuffer[i] = (short) (waveTable[i] * Short.MAX_VALUE);
+            //theta += dTheta;
         }
+    }
 
+    /**
+     * Because we are statically playing and not streaming, I only want to write the buffer once
+     */
+    public void writeWaveToAudioTrack() {
         audioTrack.write(noteBuffer, 0, noteBuffer.length);
         audioTrack.setLoopPoints(0, noteBuffer.length, -1);
     }
@@ -102,59 +77,22 @@ public class FrequencyBuffer {
     /**
      * Play the selected track
      */
-    public void play()
-    {
+    public void play() {
         audioTrack.play();
     }
-
     /**
-     * Because we are statically playing and not streaming, I only want to write the buffer once
-     */
-    private void writeTheBuffer()
-    {
-        audioTrack.write(noteBuffer, 0, noteBuffer.length);
-    }
-
-    /**
-     * Stop playing the selected track
+     * Stop playing the selected track, and reset position in buffer to index 0
      */
     public void stop() {
-        //basically a redundancy check to ensure that we are playing in the first play
-        if (AudioTrack.PLAYSTATE_PLAYING == audioTrack.getPlayState()) {
-            audioTrack.stop();
-            audioTrack.reloadStaticData();
-            audioTrack.setLoopPoints(0, noteBuffer.length, -1);
-
-        }else {
-            System.out.println("You have tried to stop a track that was not playing and I stopped you");
-        }
+        audioTrack.stop();
+        audioTrack.reloadStaticData();
+        audioTrack.setLoopPoints(0, noteBuffer.length, -1);
     }
-
-    /**
-     * The volume is going to be set to a predefined value
-     * @param leftVolume volume amount for the left speaker
-     * @param rightVolume volume amount for the right speaker
-     */
-    private void setVolume(float leftVolume, float rightVolume)
-    {
-        audioTrack.setStereoVolume(leftVolume, rightVolume);
-    }
-
-    /**
-     * Method that simply sets the volume to the max
-     */
-    private void setVolume()
-    {
-        audioTrack.setStereoVolume(AudioTrack.getMaxVolume(), AudioTrack.getMaxVolume());
-    }
-
     /**
      * Frees the resources related to the audio track.
      * Also idk how to delete the object in java. Usually its pretty good tho
      */
-    protected void destroy()
-    {
+    protected void destroy() {
         audioTrack.release();
     }
-
 }

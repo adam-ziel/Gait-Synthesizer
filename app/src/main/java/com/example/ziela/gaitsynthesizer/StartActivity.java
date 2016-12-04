@@ -31,7 +31,7 @@ public class StartActivity extends AppCompatActivity {
         v.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent configuration = new Intent(StartActivity.this, ConfigurationActivity.class);
+                Intent configuration = new Intent(StartActivity.this, ConfigActivity.class);
                 StartActivity.this.startActivity(configuration);
                 finish(); //kill this activity I'm done with it.
             }
