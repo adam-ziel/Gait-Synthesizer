@@ -101,7 +101,7 @@ public class InputActivity extends AppCompatActivity implements OnTouchListener 
      */
     public void transitionToCalibrationActivity() {
         stopBufferAndDeallocate();
-        Intent configuration = new Intent(InputActivity.this, ConfigurationActivity.class);
+        Intent configuration = new Intent(InputActivity.this, ConfigActivity.class);
         InputActivity.this.startActivity(configuration);
         finish();
     }

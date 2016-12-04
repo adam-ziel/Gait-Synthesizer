@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Movie;
+import android.util.AttributeSet;
 import android.view.View;
 
 import java.io.InputStream;
@@ -14,9 +15,10 @@ public class ConfigGUI extends View {
     private Paint paint;
     private Movie movie;
     private long startTime = 0;
+    private int movieId;
 
-    public ConfigGUI(Context context){
-        super(context);
+    public ConfigGUI( Context context, AttributeSet attrs ){
+        super( context, attrs );
         InputStream inputStream = getResources().openRawResource( R.drawable.loading );
         movie = Movie.decodeStream( inputStream );
     }
@@ -34,5 +36,8 @@ public class ConfigGUI extends View {
         movie.draw( canvas, 100, 100 );
         canvas.drawColor( Color.WHITE );
         invalidate(); // redraw canvas
+    }
+    public int getMovieId(){
+        return movieId;
     }
 }
