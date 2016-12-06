@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity
             bufferPool[indexPlaying].stop();
         bufferPool[currentConsecutiveStepCount % 8].play();
         indexPlaying = currentConsecutiveStepCount % 8;
+        setIsNotePlaying(true);
     }
 
     // TODO create class / move to frequency buffer class?

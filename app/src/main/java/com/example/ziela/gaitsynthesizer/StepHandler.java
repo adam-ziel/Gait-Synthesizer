@@ -1,15 +1,14 @@
 package com.example.ziela.gaitsynthesizer;
 
-import android.os.PowerManager;
 import android.support.v7.app.AppCompatActivity;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.view.MotionEvent;
 import android.view.View;
-
+import android.view.MotionEvent;
 import android.content.Context;
+import android.os.PowerManager;
 
 public class StepHandler extends AppCompatActivity
         implements View.OnTouchListener, SensorEventListener

@@ -10,7 +10,7 @@ public class Timer
     private static long startTime;
     private static long[] timeIntervals = {0, 0};
 
-    private static double percentTolerance = 0.2;
+    private static double percentTolerance = 0.35;
     private static double percentDeviation = 0;
     private static boolean TIMER_IDLE = true;
 
