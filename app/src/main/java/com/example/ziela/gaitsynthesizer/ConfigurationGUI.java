@@ -8,22 +8,22 @@ import android.view.View;
 
 import java.io.InputStream;
 
-public class ConfigGUI extends View {
+public class ConfigurationGUI extends View {
 
     private Movie movie;
     private long startTime = 0;
 
-    public ConfigGUI( Context context ){
+    public ConfigurationGUI(Context context ){
         super( context );
         initializeView();
     }
 
-    public ConfigGUI( Context context, AttributeSet attrs ){
+    public ConfigurationGUI(Context context, AttributeSet attrs ){
         super( context, attrs );
         initializeView();
     }
 
-    public ConfigGUI( Context context, AttributeSet attrs, int defStyle ) {
+    public ConfigurationGUI(Context context, AttributeSet attrs, int defStyle ) {
         super(context, attrs, defStyle);
         initializeView();
     }

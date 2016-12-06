@@ -30,7 +30,6 @@ public class MainActivity extends AppCompatActivity
     public static final int THIRD = 2;
     public static final int FIFTH = 4;
 
-    //TODO initialization behavior only
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -48,21 +47,12 @@ public class MainActivity extends AppCompatActivity
         configurePowerManager();
     }
 
-    // TODO highest level step behaviors
     public void onStepSensorEvent()
     {
         timer.recordTimeInterval();
+        sumTimeDifferences = sumTimeDifferences + (int) Math.abs(Timer.getTimeIntervals()[0] - Timer.getTimeIntervals()[1]);
         advanceNoteSequence();
         setStepIsFirst(false);
-//        if (!timer.percentDeviationIsOutsideTolerance()){
-//            incrementStepCounts(true);
-//        }else{
-//            timer.resetTimer();
-//            setStepIsFirst(true);
-//            incrementStepCounts(false);
-//        }
-//        if (!timer.bufferIsEmpty())
-//            updatePercentConsecutiveSteps();
     }
 
     /**
@@ -76,6 +66,7 @@ public class MainActivity extends AppCompatActivity
         lastStep = currentConsecutiveStepCount % 8;
     }
 
+    // TODO create class / move to frequency buffer class?
     // begin music functions with no dependency
     public void playChord()
     {
@@ -119,8 +110,6 @@ public class MainActivity extends AppCompatActivity
     }
     //end music functions with no dependency
 
-
-    // TODO is this needed with step counts?
     public static boolean stepIsFirst()
     {
         return firstStep;
@@ -131,25 +120,13 @@ public class MainActivity extends AppCompatActivity
         firstStep = newFirstStep;
     }
 
-
+    // TODO create class
     // begin metrics
-    // TODO move to separate class?
-
     private static int totalStepCount = 0;
     private static int currentConsecutiveStepCount = 0;
     private static int maxConsecutiveStepCount = 0;
     private static int totalNonConsecutiveStepCount = 0;
-    private static double percentConsecutiveSteps = 0;
-    private static int sumDeltaT = 0;
-    
-    public static void updatePercentConsecutiveSteps()
-    {
-        if (totalStepCount != 0) {
-            percentConsecutiveSteps = 1 - (totalNonConsecutiveStepCount/totalStepCount);
-        }else {
-            percentConsecutiveSteps = 1;
-        }
-    }
+    private static int sumTimeDifferences = 0;
 
     public static void incrementStepCounts(boolean isConsecutiveStep){
         totalStepCount++;
@@ -168,12 +145,10 @@ public class MainActivity extends AppCompatActivity
         currentConsecutiveStepCount = 0;
         maxConsecutiveStepCount = 0;
         totalNonConsecutiveStepCount = 0;
-        percentConsecutiveSteps = 0;
     }
 
-    public static double getPercentConsecutiveSteps()
-    {
-        return percentConsecutiveSteps;
+    public static int getSumTimeDifferences() {
+        return sumTimeDifferences;
     }
 
     public static int getCurrentConsecutiveStepCount()
@@ -199,7 +174,7 @@ public class MainActivity extends AppCompatActivity
 
 
     // begin sensor
-    // TODO move to seperate class?
+    // TODO create class
     /**
      * Triggers timer, and advances note sequence on step detection event
      *
@@ -244,6 +219,7 @@ public class MainActivity extends AppCompatActivity
     }
     // end sensor
 
+    //TODO create class
     //begin powermanager
     /**
      * TODO David, please rename

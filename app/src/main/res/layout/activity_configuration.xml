@@ -38,7 +38,7 @@
         android:layout_below="@+id/web_view"
         android:layout_centerHorizontal="true" />
 
-    <com.example.ziela.gaitsynthesizer.ConfigGUI
+    <com.example.ziela.gaitsynthesizer.ConfigurationGUI
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"

@@ -97,19 +97,24 @@ public class MainGUI extends View {
                 ),
                 80, circleYPos[4] + 475, paint
         );
-        if (MainActivity.getTotalStepCount() != 0){
+        if (MainActivity.getTotalStepCount() != 0) {
             canvas.drawText(
-                    String.format( Locale.getDefault(),
-                            "Percent Steps Outside %d%% Deviation: %d%%",
+                    String.format(Locale.getDefault(),
+                            "Steps Outside %d%% Deviation: %d%%",
                             (int) (100 * Timer.getPercentTolerance()),
                             (int) (100 * MainActivity.getTotalNonConsecutiveStepCount()
-                                    /MainActivity.getTotalStepCount())
+                                    / MainActivity.getTotalStepCount())
                     ),
                     80, circleYPos[4] + 550, paint
             );
+            canvas.drawText(
+                    String.format(Locale.getDefault(),
+                            "Average dT between steps: %d",
+                            (int) (MainActivity.getSumTimeDifferences() / MainActivity.getTotalStepCount())
+                    ),
+                    80, circleYPos[4] + 625, paint
+            );
         }
-
-
         invalidate(); // redraw canvas
     }
 

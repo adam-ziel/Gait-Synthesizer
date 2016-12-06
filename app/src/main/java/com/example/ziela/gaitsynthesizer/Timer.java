@@ -38,9 +38,6 @@ public class Timer
                 resetTimer();
                 MainActivity.incrementStepCounts(false);
             }
-            if (!bufferIsEmpty())
-                MainActivity.updatePercentConsecutiveSteps();
-
         }
     }
 
