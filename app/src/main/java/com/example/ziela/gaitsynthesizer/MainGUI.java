@@ -10,6 +10,9 @@ import java.util.Locale;
 public class MainGUI extends View {
 
     private Paint paint;
+    private static int textSize = 80;
+    private static int verticalTextOffset = 100;
+    private static int verticalAfterImageOffset = 450;
     private static final int radius = 120;
     private static final float START_X_POS = 700;
     private static final float START_Y_POS = 620;
@@ -22,7 +25,7 @@ public class MainGUI extends View {
         super( context );
         initializeCircleCoordinates(); // populate coordinate arrays
         paint = new Paint();
-        paint.setTextSize(80);
+        paint.setTextSize(textSize);
     }
 
     @Override
@@ -32,7 +35,7 @@ public class MainGUI extends View {
     protected void onDraw(Canvas canvas) {
         canvas.drawColor(Color.WHITE);
         int localCounter = MainActivity.getCurrentConsecutiveStepCount();
-
+        paint.setFakeBoldText(false);
         for (int i = 0; i < 8; i ++){
             paint.setColor(Color.GRAY); // Gray circles indicate non-active tones
             if (i != ((localCounter)%8)) {
@@ -44,37 +47,32 @@ public class MainGUI extends View {
                 paint.setColor(Color.GRAY);
             }
         }
-        canvas.drawText("Touch anywhere to simulate step", 100, 100, paint);
+
+        paint.setTextAlign(Paint.Align.CENTER);
+        int horizontalCenterPos = (canvas.getWidth() / 2);
+
+        canvas.drawText("Touch anywhere to simulate step",
+                horizontalCenterPos, verticalTextOffset, paint
+        );
+
+        paint.setFakeBoldText(true);
         canvas.drawText(
                 String.format( Locale.getDefault(),
-                        "Total Steps Taken: %d",
-                        MainActivity.getTotalStepCount()
+                        "Current Consecutive Steps: %d",
+                        MainActivity.getCurrentConsecutiveStepCount()
                 ),
-                100, 225, paint
+                horizontalCenterPos, verticalTextOffset + (2*textSize), paint
         );
-//        canvas.drawText(
-//                String.format( Locale.getDefault(),
-//                        "Total Consecutive Steps: %d",
-//                        (MainActivity.getTotalStepCount() - MainActivity.getTotalNonConsecutiveStepCount())
-//                ),
-//                100, 300, paint
-//        );
-//        canvas.drawText(
-//                String.format( Locale.getDefault(),
-//                        "Current Consecutive Steps: %d",
-//                        MainActivity.getCurrentConsecutiveStepCount()
-//                ),
-//                100, 225, paint
-//        );
-//        canvas.drawText(
-//                String.format( Locale.getDefault(),
-//                        "Most Recent Deviation: %d%%",
-//                        (int) (100 * Timer.getPercentDeviation())
-//                ),
-//                100, 300, paint
-//        );
 
-//        canvas.drawText(
+        canvas.drawText(
+                String.format( Locale.getDefault(),
+                        "Maximum Consecutive Steps: %d",
+                        MainActivity.getMaxConsecutiveStepCount()
+                ),
+                horizontalCenterPos, verticalTextOffset + (3*textSize), paint
+        );
+
+        //        canvas.drawText(
 //                String.format( Locale.getDefault(),
 //                        "Timer 1: %dms",
 //                        (int) (Timer.getTimeIntervals())[0]
@@ -88,31 +86,28 @@ public class MainGUI extends View {
 //                ),
 //                860, circleYPos[4] + 400, paint
 //        );
-//        canvas.drawText(
-//                String.format( Locale.getDefault(),
-//                        "Maximum Consecutive Steps: %d",
-//                        MainActivity.getMaxConsecutiveStepCount()
-//                ),
-//                100, circleYPos[4] + 475, paint
-//        );
+
+        canvas.drawText(
+                String.format( Locale.getDefault(),
+                        "Most Recent Deviation: %d%%",
+                        (int) (100 * Timer.getPercentDeviation())
+                ),
+                horizontalCenterPos, circleYPos[4] + 450, paint
+        );
+
+        int localTotal = 1;
         if (MainActivity.getTotalStepCount() != 0) {
-//            canvas.drawText(
-//                    String.format(Locale.getDefault(),
-//                            "Steps Outside %d%% Deviation: %d%%",
-//                            (int) (100 * Timer.getPercentTolerance()),
-//                            (100 * MainActivity.getTotalNonConsecutiveStepCount()
-//                                    / MainActivity.getTotalStepCount())
-//                    ),
-//                    100, circleYPos[4] + 550, paint
-//            );
-            canvas.drawText(
-                    String.format(Locale.getDefault(),
-                            "Average dT between steps: %d",
-                            (int) (MainActivity.getSumTimeDifferences() / MainActivity.getTotalStepCount())
-                    ),
-                    100, 300, paint
-            );
+            localTotal = MainActivity.getTotalStepCount();
         }
+        canvas.drawText(
+                String.format(Locale.getDefault(),
+                        "Overall Regularity: %d%%",
+                        (100 * (localTotal - MainActivity.getTotalNonConsecutiveStepCount())
+                                / localTotal )
+                ),
+                horizontalCenterPos, circleYPos[4] + 550, paint
+        );
+
         invalidate(); // redraw canvas
     }
 
