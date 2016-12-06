@@ -42,6 +42,12 @@ public class MainActivity extends AppCompatActivity
 
     public static void onStepSensorEvent()
     {
+        if ((!timer.percentDeviationIsOutsideTolerance())){
+            incrementStepCounts(true);
+        }else{
+            timer.resetTimer();
+            incrementStepCounts(false);
+        }
         Timer.recordTimeInterval();
         sumTimeDifferences = sumTimeDifferences + (int) Math.abs(Timer.getTimeIntervals()[0] - Timer.getTimeIntervals()[1]);
         advanceNoteSequence();

@@ -32,12 +32,12 @@ public class Timer
             percentDeviation = standardDeviation / average;
 
             // TODO class should be entirely independent of step behavior
-            if ((!percentDeviationIsOutsideTolerance())){
-                MainActivity.incrementStepCounts(true);
-            }else{
-                resetTimer();
-                MainActivity.incrementStepCounts(false);
-            }
+//            if ((!percentDeviationIsOutsideTolerance())){
+//                MainActivity.incrementStepCounts(true);
+//            }else{
+//                resetTimer();
+//                MainActivity.incrementStepCounts(false);
+//            }
         }
     }
 
