@@ -1,9 +1,9 @@
 package com.example.ziela.gaitsynthesizer;
 
 /**
- * This class acts as a stopwatch, by polling system time on each record event.
- * It compares each pair of consecutive record times with each other, and progresses the user
- * through the musical sequence depending on how regular their ratio is.
+ * Timer that records the two time intervals between the three most recent
+ * recordTime calls and provides comparisons of these time intervals to each
+ * other and a tolerance value.
  */
 public class Timer
 {
@@ -15,9 +15,41 @@ public class Timer
     private static boolean TIMER_IDLE = true;
 
     /**
-     * Timer routine called every time a step is detected
+     * Updates percentDeviation to be the ratio between the standardDeviation
+     * and average of the two stored time intervals.
+     * If this ratio is outside the percentTolerance, the timer and the
+     * currentConsecutiveStepCount are reset.
      */
-    public void onStep()
+    public void compareTimeIntervals()
+    {
+        if (!bufferIsEmpty())
+        {
+            double average = (double) (timeIntervals[0] + timeIntervals[1])/2;
+            double standardDeviation = Math.sqrt(
+                    Math.pow(timeIntervals[0] - average, 2) +
+                    Math.pow(timeIntervals[1] - average, 2)
+            );
+            percentDeviation = standardDeviation / average;
+
+            // TODO class should be entirely independent of step behavior
+            if (!percentDeviationIsOutsideTolerance()){
+                MainActivity.incrementStepCounts(true);
+            }else{
+                resetTimer();
+                MainActivity.incrementStepCounts(false);
+            }
+            if (!bufferIsEmpty())
+                MainActivity.updatePercentConsecutiveSteps();
+
+        }
+    }
+
+    /**
+     * Begins recording time interval if the timer is idle.
+     * Stops recording time interval if the timer is running, compares the
+     * stored time intervals, and then begins recording a new time interval.
+     */
+    public void recordTimeInterval()
     {
         if (timerIsIdle()) // i.e. there's no active timer we have to stop
             start();
@@ -40,36 +72,12 @@ public class Timer
 
     /**
      * Right shifts array contents to make room for new time,
-     * then places the new step interval in index zero
+     * then places the new time interval in index zero
      */
     public void stop()
     {
         timeIntervals[1] = timeIntervals[0]; // shift right to vacate index 0
         timeIntervals[0] = System.currentTimeMillis() - startTime;
-    }
-
-    /**
-     * Gets the ratio between the current, and previous intervals,
-     * then compares it against a percentTolerance value.
-     * If outside the percentTolerance, all times are cleared, and the currentConsecutiveStepCount
-     * is reset.
-     */
-    public void compareTimeIntervals()
-    {
-        if (!bufferIsEmpty())
-        {
-            double average = (double) (timeIntervals[0] + timeIntervals[1])/2;
-            double standardDeviation = Math.sqrt( Math.pow(timeIntervals[0] - average, 2) +
-                                   Math.pow(timeIntervals[1] - average, 2)
-            );
-            percentDeviation = standardDeviation / average;
-            if (percentDeviationIsOutsideTolerance())
-            {
-                MainActivity.addNonConsecutiveStep();
-                MainActivity.resetCurrentCount();
-                resetTimer();
-            }
-        }
     }
 
     public boolean timerIsIdle(){
@@ -83,7 +91,7 @@ public class Timer
 
     public boolean bufferIsEmpty()
     {
-        return ((timeIntervals[0] == 0) && (timeIntervals[1] == 0));
+        return ((timeIntervals[0] == 0) || (timeIntervals[1] == 0));
     }
 
     /**
@@ -96,14 +104,9 @@ public class Timer
         TIMER_IDLE = true;
     }
 
-    public static double getTimer1()
+    public static double[] getTimeIntervals()
     {
-        return (double) timeIntervals[0];
-    }
-
-    public static double getTimer2()
-    {
-        return (double) timeIntervals[1];
+        return new double[]{(double) timeIntervals[0], (double) timeIntervals[1]};
     }
 
     public static double getPercentTolerance()

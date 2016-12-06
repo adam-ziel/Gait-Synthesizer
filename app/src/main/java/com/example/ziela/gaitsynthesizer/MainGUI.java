@@ -31,11 +31,9 @@ public class MainGUI extends View {
      */
     protected void onDraw(Canvas canvas) {
         canvas.drawColor(Color.WHITE);
-        int localCounter;
-        if(MainActivity.getFirstStep()){
-            localCounter = MainActivity.getCurrentConsecutiveStepCount();
-        }else{
-            localCounter = MainActivity.getCurrentConsecutiveStepCount() - 1;
+        int localCounter = MainActivity.getCurrentConsecutiveStepCount();
+        if(MainActivity.stepIsFirst()){
+            localCounter--;
         }
 
         for (int i = 0; i < 8; i ++){
@@ -81,14 +79,14 @@ public class MainGUI extends View {
         canvas.drawText(
                 String.format( Locale.getDefault(),
                         "Timer 1: %dms",
-                        (int) Timer.getTimer1()
+                        (int) (Timer.getTimeIntervals())[0]
                 ),
                 80, circleYPos[4] + 400, paint
         );
         canvas.drawText(
                 String.format( Locale.getDefault(),
                         "Timer 2: %dms",
-                        (int) Timer.getTimer2()
+                        (int) (Timer.getTimeIntervals())[1]
                 ),
                 860, circleYPos[4] + 400, paint
         );
@@ -99,14 +97,19 @@ public class MainGUI extends View {
                 ),
                 80, circleYPos[4] + 475, paint
         );
-        canvas.drawText(
-                String.format( Locale.getDefault(),
-                        "Steps Outside %d%% Deviation: %d%%",
-                        (int) (100 * Timer.getPercentTolerance()),
-                        (int) (100 * MainActivity.getPercentConsecutiveSteps())
-                ),
-                80, circleYPos[4] + 550, paint
-        );
+        if (MainActivity.getTotalStepCount() != 0){
+            canvas.drawText(
+                    String.format( Locale.getDefault(),
+                            "Percent Steps Outside %d%% Deviation: %d%%",
+                            (int) (100 * Timer.getPercentTolerance()),
+                            (int) (100 * MainActivity.getTotalNonConsecutiveStepCount()
+                                    /MainActivity.getTotalStepCount())
+                    ),
+                    80, circleYPos[4] + 550, paint
+            );
+        }
+
+
         invalidate(); // redraw canvas
     }
 
