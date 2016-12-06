@@ -22,7 +22,7 @@ public class MainGUI extends View {
         super( context );
         initializeCircleCoordinates(); // populate coordinate arrays
         paint = new Paint();
-        paint.setTextSize( 80 );
+        paint.setTextSize(80);
     }
 
     @Override
@@ -33,9 +33,9 @@ public class MainGUI extends View {
         canvas.drawColor(Color.WHITE);
         int localCounter;
         if(MainActivity.getFirstStep()){
-            localCounter = MainActivity.getStepCount();
+            localCounter = MainActivity.getCurrentConsecutiveStepCount();
         }else{
-            localCounter = MainActivity.getStepCount() - 1;
+            localCounter = MainActivity.getCurrentConsecutiveStepCount() - 1;
         }
 
         for (int i = 0; i < 8; i ++){
@@ -49,17 +49,19 @@ public class MainGUI extends View {
                 paint.setColor(Color.GRAY);
             }
         }
-        canvas.drawText("Touch anywhere to play", 100, 80, paint);
+        canvas.drawText("Touch anywhere to play", 100, 100, paint);
         canvas.drawText( String.format( Locale.getDefault(), "Current Consecutive Steps: %d",
-                         MainActivity.getStepCount() ), 100, 200, paint);
-        /*canvas.drawText( String.format( Locale.getDefault(), "Maximum Consecutive Steps: %d",
-                MainActivity.getMaxStepCount() ), 100, 220, paint);
-        canvas.drawText( String.format( Locale.getDefault(), "Percent of steps within Tolerance: %d %",
-                MainActivity.getPercentGood() ), 100, 240, paint);*/
-        canvas.drawText( String.format( Locale.getDefault(), "Timer 1: %d",
-                         (int) Timer.getTimer1() ), 80, circleYPos[4] + 300, paint);
-        canvas.drawText( String.format( Locale.getDefault(), "Timer 2: %d",
-                         (int) Timer.getTimer2() ), 860, circleYPos[4] + 300, paint);
+                         MainActivity.getCurrentConsecutiveStepCount() ), 100, 225, paint);
+        canvas.drawText( String.format( Locale.getDefault(), "Maximum Consecutive Steps: %d",
+                MainActivity.getMaxConsecutiveStepCount() ), 100, 300, paint);
+        canvas.drawText( String.format( Locale.getDefault(), "Steps within Tolerance: %d%%",
+                (int) (100 * MainActivity.getPercentConsecutiveSteps()) ), 100, 375, paint);
+        canvas.drawText( String.format( Locale.getDefault(), "Timer 1: %dms",
+                         (int) Timer.getTimer1() ), 80, circleYPos[4] + 400, paint);
+        canvas.drawText( String.format( Locale.getDefault(), "Timer 2: %dms",
+                         (int) Timer.getTimer2() ), 860, circleYPos[4] + 400, paint);
+        canvas.drawText( String.format( Locale.getDefault(), "Deviation: %d%%",
+                (int) (100 * Timer.getDeviationPercent())), 240, circleYPos[4] + 475, paint);
         invalidate(); // redraw canvas
     }
 

@@ -8,15 +8,11 @@ package com.example.ziela.gaitsynthesizer;
 public class Timer
 {
     private long startTime;
-
     private static long[] pastTwoStepIntervals = {0, 0};
 
-    private double tolerance = 0.1;
-
-    private double deviation;
-
-    private boolean TIMER_IDLE = true;
-
+    private static double tolerance = 0.15;
+    private static double deviationPercent = 0;
+    private static boolean TIMER_IDLE = true;
 
     /**
      * Timer routine called every time a step is detected
@@ -33,17 +29,14 @@ public class Timer
         }
     }
 
-
     /**
      * Records start time, and puts down TIMER_IDLE flag
      */
     public void start()
     {
         startTime = System.currentTimeMillis();
-
         TIMER_IDLE = false;
     }
-
 
     /**
      * Right shifts array contents to make room for new time,
@@ -52,12 +45,8 @@ public class Timer
     public void stop()
     {
         pastTwoStepIntervals[1] = pastTwoStepIntervals[0]; // shift right to vacate index 0
-
         pastTwoStepIntervals[0] = System.currentTimeMillis() - startTime;
-
-        updateTimerDisplays();
     }
-
 
     /**
      * Gets the ratio between the current, and previous step intervals,
@@ -66,30 +55,33 @@ public class Timer
      */
     public void comparePastTwoStepIntervals()
     {
+        double average;
+        double standardDeviation;
         if (bufferHasTwoValues())
         {
-            deviation = (double) pastTwoStepIntervals[0] / pastTwoStepIntervals[1];
-
-//            MainActivity.setDeviationDisplay("Deviation: " +
-//                    String.format("%.1f", (deviation * 100) - 100) + "%");
-
-            if (deviationIsOutsideTolerance())
+            average = (double) (pastTwoStepIntervals[0] + pastTwoStepIntervals[1])/2;
+            standardDeviation = Math.sqrt( Math.pow(pastTwoStepIntervals[0] - average, 2) +
+                                   Math.pow(pastTwoStepIntervals[1] -average, 2)
+            );
+            deviationPercent = standardDeviation / average;
+            if (deviationPercentIsOutsideTolerance())
             {
+                MainActivity.addNonConsecutiveStep();
                 resetStepCountAndTimerBuffer();
             }
         }
     }
 
 
-     public boolean deviationIsOutsideTolerance()
+     public boolean deviationPercentIsOutsideTolerance()
     {
-        return Math.abs(1 - deviation) > tolerance;
+        return deviationPercent > tolerance;
     }
 
 
     public boolean bufferHasTwoValues()
     {
-        return pastTwoStepIntervals[1] != 0;
+        return ((pastTwoStepIntervals[0] != 0) && (pastTwoStepIntervals[1] != 0));
     }
 
     /**
@@ -97,15 +89,11 @@ public class Timer
      */
     public void resetStepCountAndTimerBuffer()
     {
-        MainActivity.resetStepCount();
+        MainActivity.resetCurrentCount();
 
         resetTimerBuffer();
-
-        updateTimerDisplays();
-
         TIMER_IDLE = true;
     }
-
 
     /**
      * Sets both indices back to 0
@@ -126,12 +114,9 @@ public class Timer
         return (double) pastTwoStepIntervals[1];
     }
 
-    /**
-     * Updates the TextView instances in MainActivity
-     */
-    public void updateTimerDisplays()
+    public static double getDeviationPercent()
     {
-//        MainActivity.setTimer1Display("Timer 1:" + pastTwoStepIntervals[0]);
-//        MainActivity.setTimer2Display("Timer 2: " + pastTwoStepIntervals[1]);
+        return deviationPercent;
     }
+
 }

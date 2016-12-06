@@ -17,10 +17,12 @@ public class ConfigGUI extends View {
         super( context );
         initializeView();
     }
+
     public ConfigGUI( Context context, AttributeSet attrs ){
         super( context, attrs );
         initializeView();
     }
+
     public ConfigGUI( Context context, AttributeSet attrs, int defStyle ) {
         super(context, attrs, defStyle);
         initializeView();

@@ -27,7 +27,7 @@ import android.view.View.OnTouchListener;
 public class ConfigurationActivity extends AppCompatActivity
         implements SensorEventListener, OnTouchListener
 {
-    WebView webView;
+
     private TextView textView, noteTextView;
 
     private SensorManager mSensorManager;
@@ -39,12 +39,11 @@ public class ConfigurationActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configuration);
 
-
         // get XML handles
         noteTextView = (TextView) findViewById(R.id.inputNoteTextView);
         textView = (TextView) findViewById(R.id.stepsTakenText);
 
-        // again, what are these doing?
+        // TODO matt again, what are these doing?
         mSensorManager = (SensorManager) getSystemService(this.SENSOR_SERVICE);
         mStepDetectorSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
 
@@ -68,9 +67,7 @@ public class ConfigurationActivity extends AppCompatActivity
         if (sensor.getType() == Sensor.TYPE_STEP_DETECTOR)
         {
             Intent main = new Intent(ConfigurationActivity.this, MainActivity.class);
-
             ConfigurationActivity.this.startActivity(main);
-
             finish();
         }
     }
