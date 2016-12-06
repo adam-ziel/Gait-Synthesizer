@@ -7,7 +7,7 @@ package com.example.ziela.gaitsynthesizer;
  */
 public class Timer
 {
-    private long startTime;
+    private static long startTime;
     private static long[] timeIntervals = {0, 0};
 
     private static double percentTolerance = 0.2;
@@ -20,7 +20,7 @@ public class Timer
      * If this ratio is outside the percentTolerance, the timer and the
      * currentConsecutiveStepCount are reset.
      */
-    public void compareTimeIntervals()
+    public static void compareTimeIntervals()
     {
         if (!bufferIsEmpty())
         {
@@ -32,7 +32,7 @@ public class Timer
             percentDeviation = standardDeviation / average;
 
             // TODO class should be entirely independent of step behavior
-            if (!percentDeviationIsOutsideTolerance()){
+            if ((!percentDeviationIsOutsideTolerance())){
                 MainActivity.incrementStepCounts(true);
             }else{
                 resetTimer();
@@ -46,7 +46,7 @@ public class Timer
      * Stops recording time interval if the timer is running, compares the
      * stored time intervals, and then begins recording a new time interval.
      */
-    public void recordTimeInterval()
+    public static void recordTimeInterval()
     {
         if (timerIsIdle()) // i.e. there's no active timer we have to stop
             start();
@@ -61,7 +61,7 @@ public class Timer
     /**
      * Records start time, and puts down TIMER_IDLE flag
      */
-    public void start()
+    public static void start()
     {
         startTime = System.currentTimeMillis();
         TIMER_IDLE = false;
@@ -71,33 +71,34 @@ public class Timer
      * Right shifts array contents to make room for new time,
      * then places the new time interval in index zero
      */
-    public void stop()
+    public static void stop()
     {
         timeIntervals[1] = timeIntervals[0]; // shift right to vacate index 0
         timeIntervals[0] = System.currentTimeMillis() - startTime;
     }
 
-    public boolean timerIsIdle(){
+    public static boolean timerIsIdle(){
         return TIMER_IDLE;
     }
 
-    public boolean percentDeviationIsOutsideTolerance()
+    public static boolean percentDeviationIsOutsideTolerance()
     {
         return percentDeviation > percentTolerance;
     }
 
-    public boolean bufferIsEmpty()
+    public static boolean bufferIsEmpty()
     {
-        return ((timeIntervals[0] == 0) || (timeIntervals[1] == 0));
+        return ((timeIntervals[1] == 0)); //|| (timeIntervals[0] == 0));
     }
 
     /**
      * Sets both indices back to 0 and sets the timer idle flag
      */
-    public void resetTimer()
+    public static void resetTimer()
     {
         timeIntervals[0] = 0;
         timeIntervals[1] = 0;
+        percentDeviation = 0;
         TIMER_IDLE = true;
     }
 

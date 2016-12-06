@@ -32,9 +32,6 @@ public class MainGUI extends View {
     protected void onDraw(Canvas canvas) {
         canvas.drawColor(Color.WHITE);
         int localCounter = MainActivity.getCurrentConsecutiveStepCount();
-        if(MainActivity.stepIsFirst()){
-            localCounter--;
-        }
 
         for (int i = 0; i < 8; i ++){
             paint.setColor(Color.GRAY); // Gray circles indicate non-active tones
@@ -102,7 +99,7 @@ public class MainGUI extends View {
                     String.format(Locale.getDefault(),
                             "Steps Outside %d%% Deviation: %d%%",
                             (int) (100 * Timer.getPercentTolerance()),
-                            (int) (100 * MainActivity.getTotalNonConsecutiveStepCount()
+                            (100 * MainActivity.getTotalNonConsecutiveStepCount()
                                     / MainActivity.getTotalStepCount())
                     ),
                     80, circleYPos[4] + 550, paint
