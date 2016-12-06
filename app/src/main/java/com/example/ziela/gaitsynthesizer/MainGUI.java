@@ -50,18 +50,63 @@ public class MainGUI extends View {
             }
         }
         canvas.drawText("Touch anywhere to play", 100, 100, paint);
-        canvas.drawText( String.format( Locale.getDefault(), "Current Consecutive Steps: %d",
-                         MainActivity.getCurrentConsecutiveStepCount() ), 100, 225, paint);
-        canvas.drawText( String.format( Locale.getDefault(), "Maximum Consecutive Steps: %d",
-                MainActivity.getMaxConsecutiveStepCount() ), 100, 300, paint);
-        canvas.drawText( String.format( Locale.getDefault(), "Steps within Tolerance: %d%%",
-                (int) (100 * MainActivity.getPercentConsecutiveSteps()) ), 100, 375, paint);
-        canvas.drawText( String.format( Locale.getDefault(), "Timer 1: %dms",
-                         (int) Timer.getTimer1() ), 80, circleYPos[4] + 400, paint);
-        canvas.drawText( String.format( Locale.getDefault(), "Timer 2: %dms",
-                         (int) Timer.getTimer2() ), 860, circleYPos[4] + 400, paint);
-        canvas.drawText( String.format( Locale.getDefault(), "Deviation: %d%%",
-                (int) (100 * Timer.getDeviationPercent())), 240, circleYPos[4] + 475, paint);
+        canvas.drawText(
+                String.format( Locale.getDefault(),
+                        "Total Steps Taken: %d",
+                        MainActivity.getTotalStepCount()
+                ),
+                100, 225, paint
+        );
+        canvas.drawText(
+                String.format( Locale.getDefault(),
+                        "Total Consecutive Steps: %d",
+                        (MainActivity.getTotalStepCount() - MainActivity.getTotalNonConsecutiveStepCount())
+                ),
+                100, 300, paint
+        );
+        canvas.drawText(
+                String.format( Locale.getDefault(),
+                        "Current Consecutive Steps: %d",
+                        MainActivity.getCurrentConsecutiveStepCount()
+                ),
+                100, 375, paint
+        );
+        canvas.drawText(
+                String.format( Locale.getDefault(),
+                        "Maximum Consecutive Steps: %d",
+                        MainActivity.getMaxConsecutiveStepCount()
+                ),
+                100, 450, paint
+        );
+        canvas.drawText(
+                String.format( Locale.getDefault(),
+                        "Timer 1: %dms",
+                        (int) Timer.getTimer1()
+                ),
+                80, circleYPos[4] + 400, paint
+        );
+        canvas.drawText(
+                String.format( Locale.getDefault(),
+                        "Timer 2: %dms",
+                        (int) Timer.getTimer2()
+                ),
+                860, circleYPos[4] + 400, paint
+        );
+        canvas.drawText(
+                String.format( Locale.getDefault(),
+                        "Most Recent Deviation: %d%%",
+                        (int) (100 * Timer.getPercentDeviation())
+                ),
+                80, circleYPos[4] + 475, paint
+        );
+        canvas.drawText(
+                String.format( Locale.getDefault(),
+                        "Steps Outside %d%% Deviation: %d%%",
+                        (int) (100 * Timer.getPercentTolerance()),
+                        (int) (100 * MainActivity.getPercentConsecutiveSteps())
+                ),
+                80, circleYPos[4] + 550, paint
+        );
         invalidate(); // redraw canvas
     }
 

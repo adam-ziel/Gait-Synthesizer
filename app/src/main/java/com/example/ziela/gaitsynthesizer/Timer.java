@@ -1,17 +1,17 @@
 package com.example.ziela.gaitsynthesizer;
 
 /**
- * This class acts as a stopwatch, by polling system time on each step event.
- * It compares each pair of consecutive steps with each other, and progresses the user
+ * This class acts as a stopwatch, by polling system time on each record event.
+ * It compares each pair of consecutive record times with each other, and progresses the user
  * through the musical sequence depending on how regular their ratio is.
  */
 public class Timer
 {
     private long startTime;
-    private static long[] pastTwoStepIntervals = {0, 0};
+    private static long[] timeIntervals = {0, 0};
 
-    private static double tolerance = 0.15;
-    private static double deviationPercent = 0;
+    private static double percentTolerance = 0.2;
+    private static double percentDeviation = 0;
     private static boolean TIMER_IDLE = true;
 
     /**
@@ -19,12 +19,12 @@ public class Timer
      */
     public void onStep()
     {
-        if (TIMER_IDLE) // i.e. there's no active timer we have to stop
+        if (timerIsIdle()) // i.e. there's no active timer we have to stop
             start();
         else
         {
             stop();
-            comparePastTwoStepIntervals();
+            compareTimeIntervals();
             start();
         }
     }
@@ -44,79 +44,76 @@ public class Timer
      */
     public void stop()
     {
-        pastTwoStepIntervals[1] = pastTwoStepIntervals[0]; // shift right to vacate index 0
-        pastTwoStepIntervals[0] = System.currentTimeMillis() - startTime;
+        timeIntervals[1] = timeIntervals[0]; // shift right to vacate index 0
+        timeIntervals[0] = System.currentTimeMillis() - startTime;
     }
 
     /**
-     * Gets the ratio between the current, and previous step intervals,
-     * then compares it against a tolerance value.
-     * If outside the tolerance, all times are cleared, and the stepcount is reset.
+     * Gets the ratio between the current, and previous intervals,
+     * then compares it against a percentTolerance value.
+     * If outside the percentTolerance, all times are cleared, and the currentConsecutiveStepCount
+     * is reset.
      */
-    public void comparePastTwoStepIntervals()
+    public void compareTimeIntervals()
     {
-        double average;
-        double standardDeviation;
-        if (bufferHasTwoValues())
+        if (!bufferIsEmpty())
         {
-            average = (double) (pastTwoStepIntervals[0] + pastTwoStepIntervals[1])/2;
-            standardDeviation = Math.sqrt( Math.pow(pastTwoStepIntervals[0] - average, 2) +
-                                   Math.pow(pastTwoStepIntervals[1] -average, 2)
+            double average = (double) (timeIntervals[0] + timeIntervals[1])/2;
+            double standardDeviation = Math.sqrt( Math.pow(timeIntervals[0] - average, 2) +
+                                   Math.pow(timeIntervals[1] - average, 2)
             );
-            deviationPercent = standardDeviation / average;
-            if (deviationPercentIsOutsideTolerance())
+            percentDeviation = standardDeviation / average;
+            if (percentDeviationIsOutsideTolerance())
             {
                 MainActivity.addNonConsecutiveStep();
-                resetStepCountAndTimerBuffer();
+                MainActivity.resetCurrentCount();
+                resetTimer();
             }
         }
     }
 
-
-     public boolean deviationPercentIsOutsideTolerance()
-    {
-        return deviationPercent > tolerance;
+    public boolean timerIsIdle(){
+        return TIMER_IDLE;
     }
 
-
-    public boolean bufferHasTwoValues()
+    public boolean percentDeviationIsOutsideTolerance()
     {
-        return ((pastTwoStepIntervals[0] != 0) && (pastTwoStepIntervals[1] != 0));
+        return percentDeviation > percentTolerance;
+    }
+
+    public boolean bufferIsEmpty()
+    {
+        return ((timeIntervals[0] == 0) && (timeIntervals[1] == 0));
     }
 
     /**
-     * Protocol for handling steps that fall outside of the regularity tolerance
+     * Sets both indices back to 0 and sets the timer idle flag
      */
-    public void resetStepCountAndTimerBuffer()
+    public void resetTimer()
     {
-        MainActivity.resetCurrentCount();
-
-        resetTimerBuffer();
+        timeIntervals[0] = 0;
+        timeIntervals[1] = 0;
         TIMER_IDLE = true;
-    }
-
-    /**
-     * Sets both indices back to 0
-     */
-    public void resetTimerBuffer()
-    {
-        pastTwoStepIntervals[0] = 0;
-        pastTwoStepIntervals[1] = 0;
     }
 
     public static double getTimer1()
     {
-        return (double) pastTwoStepIntervals[0];
+        return (double) timeIntervals[0];
     }
 
     public static double getTimer2()
     {
-        return (double) pastTwoStepIntervals[1];
+        return (double) timeIntervals[1];
     }
 
-    public static double getDeviationPercent()
+    public static double getPercentTolerance()
     {
-        return deviationPercent;
+        return percentTolerance;
+    }
+
+    public static double getPercentDeviation()
+    {
+        return percentDeviation;
     }
 
 }

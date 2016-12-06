@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity
     private static int currentConsecutiveStepCount = 0;
     private static int maxConsecutiveStepCount = 0;
     private static int totalNonConsecutiveStepCount = 0;
+    private static double percentConsecutiveSteps = 0;
 
     public static final int ROOT = 0;
     public static final int THIRD = 2;
@@ -90,7 +91,7 @@ public class MainActivity extends AppCompatActivity
     {
         timer.onStep();
         advanceNoteSequence();
-        totalStepCount++;
+        addTotalStepCount();
         if (currentConsecutiveStepCount > maxConsecutiveStepCount)
             maxConsecutiveStepCount = currentConsecutiveStepCount;
     }
@@ -197,32 +198,53 @@ public class MainActivity extends AppCompatActivity
     {
         return totalStepCount;
     }
+
     public static int getCurrentConsecutiveStepCount()
     {
         return currentConsecutiveStepCount;
     }
+
     public static int getMaxConsecutiveStepCount()
     {
         return maxConsecutiveStepCount;
     }
+
     public static int getTotalNonConsecutiveStepCount()
     {
         return totalNonConsecutiveStepCount;
     }
-    public static double getPercentConsecutiveSteps()
+
+    public static void addNonConsecutiveStep()
     {
-        return (totalStepCount != 0) ? (1 - (totalNonConsecutiveStepCount / totalStepCount)) : 0;
+        totalNonConsecutiveStepCount++;
+        updatePercentConsecutiveSteps();
     }
 
-    public static void addNonConsecutiveStep() {
-        totalNonConsecutiveStepCount++;
+    public static void addTotalStepCount()
+    {
+        totalStepCount++;
+        updatePercentConsecutiveSteps();
+    }
+
+    //TODO broken
+    public static void updatePercentConsecutiveSteps()
+    {
+        if (totalStepCount != 0) {
+            percentConsecutiveSteps = ( (totalNonConsecutiveStepCount/totalStepCount) );
+        }else {
+            percentConsecutiveSteps = 1;
+        }
+    }
+
+    public static double getPercentConsecutiveSteps()
+    {
+        return percentConsecutiveSteps;
     }
 
     public static void resetCurrentCount()
     {
         currentConsecutiveStepCount = 0;
     }
-
     // end metrics
 
     @Override
