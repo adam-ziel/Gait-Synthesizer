@@ -11,19 +11,22 @@ public class MainGUI extends View {
 
     private Paint paint;
     private static int textSize = 80;
-    private static int verticalTextOffset = 100;
-    private static int verticalAfterImageOffset = 450;
-    private static final int radius = 120;
-    private static final float START_X_POS = 700;
-    private static final float START_Y_POS = 620;
-    private static final float X_POS_OFFSET = 200;
-    private static final float Y_POS_OFFSET = 200;
+    private static int verticalTextOffset = textSize + 40;
+    private static int verticalAfterImageOffset = (textSize * 4) + 40;
+    private static final int radius = (int) (textSize * 1.75);
+    private static float START_X_POS = 720;
+    private static float START_Y_POS = 1120 - (3 * radius);//(textSize * 9) + 60;
+    private static float X_POS_OFFSET = textSize + radius; //200
+    private static float Y_POS_OFFSET = textSize + radius; //200
     private static float[] circleXPos = new float[8]; // X coordinates of circles
     private static float[] circleYPos = new float[8]; // Y coordinates of circles
 
+    // made for 1440 x 2240 phone
     public MainGUI( Context context ) {
         super( context );
+
         initializeCircleCoordinates(); // populate coordinate arrays
+
         paint = new Paint();
         paint.setTextSize(textSize);
     }
@@ -32,10 +35,14 @@ public class MainGUI extends View {
     /*
      * Draws GUI using canvas rather than XML files
      */
-    protected void onDraw(Canvas canvas) {
+    protected void onDraw(Canvas canvas)
+    {
+        int horizontalCenterPos = (canvas.getWidth() / 2);
         canvas.drawColor(Color.WHITE);
-        int localCounter = MainActivity.getCurrentConsecutiveStepCount();
         paint.setFakeBoldText(false);
+        paint.setTextAlign(Paint.Align.CENTER);
+
+        int localCounter = MainActivity.getCurrentConsecutiveStepCount();
         for (int i = 0; i < 8; i ++){
             paint.setColor(Color.GRAY); // Gray circles indicate non-active tones
             if (i != ((localCounter)%8)) {
@@ -48,9 +55,6 @@ public class MainGUI extends View {
             }
         }
 
-        paint.setTextAlign(Paint.Align.CENTER);
-        int horizontalCenterPos = (canvas.getWidth() / 2);
-
         canvas.drawText("Touch anywhere to simulate step",
                 horizontalCenterPos, verticalTextOffset, paint
         );
@@ -61,7 +65,7 @@ public class MainGUI extends View {
                         "Current Consecutive Steps: %d",
                         MainActivity.getCurrentConsecutiveStepCount()
                 ),
-                horizontalCenterPos, verticalTextOffset + (2*textSize), paint
+                horizontalCenterPos, verticalTextOffset + (3*textSize), paint
         );
 
         canvas.drawText(
@@ -69,7 +73,7 @@ public class MainGUI extends View {
                         "Maximum Consecutive Steps: %d",
                         MainActivity.getMaxConsecutiveStepCount()
                 ),
-                horizontalCenterPos, verticalTextOffset + (3*textSize), paint
+                horizontalCenterPos, verticalTextOffset + (4*textSize), paint
         );
 
         //        canvas.drawText(
@@ -92,7 +96,7 @@ public class MainGUI extends View {
                         "Most Recent Deviation: %d%%",
                         (int) (100 * Timer.getPercentDeviation())
                 ),
-                horizontalCenterPos, circleYPos[4] + 450, paint
+                horizontalCenterPos, circleYPos[4] + verticalAfterImageOffset, paint
         );
 
         int localTotal = 1;
@@ -105,7 +109,7 @@ public class MainGUI extends View {
                         (100 * (localTotal - MainActivity.getTotalNonConsecutiveStepCount())
                                 / localTotal )
                 ),
-                horizontalCenterPos, circleYPos[4] + 550, paint
+                horizontalCenterPos, circleYPos[4] + verticalAfterImageOffset + textSize, paint
         );
 
         invalidate(); // redraw canvas
