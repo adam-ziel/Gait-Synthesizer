@@ -1,137 +1,119 @@
 package com.example.ziela.gaitsynthesizer;
 
 /**
- * This class acts as a stopwatch, by polling system time on each step event.
- * It compares each pair of consecutive steps with each other, and progresses the user
- * through the musical sequence depending on how regular their ratio is.
+ * Timer that records the two time intervals between the three most recent
+ * recordTime calls and provides comparisons of these time intervals to each
+ * other and a tolerance value.
  */
 public class Timer
 {
-    private long startTime;
+    private static long startTime;
+    private static long[] timeIntervals = {0, 0};
 
-    private static long[] pastTwoStepIntervals = {0, 0};
-
-    private double tolerance = 0.1;
-
-    private double deviation;
-
-    private boolean TIMER_IDLE = true;
-
+    private static final double PERCENT_TOLERANCE = 0.15; //our maximum allowed tollerance
+    private static double percentDeviation = 0;
+    private static boolean TIMER_IDLE = true;
 
     /**
-     * Timer routine called every time a step is detected
+     * Updates percentDeviation to be the ratio between the standardDeviation
+     * and average of the two stored time intervals.
+     * If this ratio is outside the PERCENT_TOLERANCE, the timer and the
+     * currentConsecutiveStepCount are reset.
      */
-    public void onStep()
+    public static void compareTimeIntervals()
     {
-        if (TIMER_IDLE) // i.e. there's no active timer we have to stop
-            start();
-        else
+        if (!bufferIsEmpty())
         {
-            stop();
-            comparePastTwoStepIntervals();
-            start();
+            double average = (double) (timeIntervals[0] + timeIntervals[1])/2;
+            double standardDeviation = Math.sqrt(
+                    Math.pow(timeIntervals[0] - average, 2) +
+                            Math.pow(timeIntervals[1] - average, 2)
+            );
+            percentDeviation = standardDeviation / average;
         }
     }
 
+    /**
+     * Begins recording time interval if the timer is idle.
+     * Stops recording time interval if the timer is running, compares the
+     * stored time intervals, and then begins recording a new time interval.
+     */
+    public static void recordTimeInterval()
+    {
+        if (timerIsIdle()) {
+            // i.e. there's no active timer we have to stop
+            start();
+        } else {
+            stop();
+            compareTimeIntervals();
+            start();
+        }
+    }
 
     /**
      * Records start time, and puts down TIMER_IDLE flag
      */
-    public void start()
+    public static void start()
     {
         startTime = System.currentTimeMillis();
-
         TIMER_IDLE = false;
     }
 
-
     /**
      * Right shifts array contents to make room for new time,
-     * then places the new step interval in index zero
+     * then places the new time interval in index zero
      */
-    public void stop()
+    public static void stop()
     {
-        pastTwoStepIntervals[1] = pastTwoStepIntervals[0]; // shift right to vacate index 0
-
-        pastTwoStepIntervals[0] = System.currentTimeMillis() - startTime;
-
-        updateTimerDisplays();
-    }
-
-
-    /**
-     * Gets the ratio between the current, and previous step intervals,
-     * then compares it against a tolerance value.
-     * If outside the tolerance, all times are cleared, and the stepcount is reset.
-     */
-    public void comparePastTwoStepIntervals()
-    {
-        if (bufferHasTwoValues())
-        {
-            deviation = (double) pastTwoStepIntervals[0] / pastTwoStepIntervals[1];
-
-//            MainActivity.setDeviationDisplay("Deviation: " +
-//                    String.format("%.1f", (deviation * 100) - 100) + "%");
-
-            if (deviationIsOutsideTolerance())
-            {
-                resetStepCountAndTimerBuffer();
-            }
-        }
-    }
-
-
-     public boolean deviationIsOutsideTolerance()
-    {
-        return Math.abs(1 - deviation) > tolerance;
-    }
-
-
-    public boolean bufferHasTwoValues()
-    {
-        return pastTwoStepIntervals[1] != 0;
+        timeIntervals[1] = timeIntervals[0]; // shift right to vacate index 0
+        timeIntervals[0] = System.currentTimeMillis() - startTime;
     }
 
     /**
-     * Protocol for handling steps that fall outside of the regularity tolerance
+     *
+     * @return gets the current state of the timer
      */
-    public void resetStepCountAndTimerBuffer()
+    public static boolean timerIsIdle(){
+        return TIMER_IDLE;
+    }
+
+    /**
+     *
+     * @return are we beyond the 10% deviation allowance
+     */
+    public static boolean percentDeviationIsOutsideTolerance()
     {
-        MainActivity.resetStepCount();
+        return percentDeviation > PERCENT_TOLERANCE;
+    }
 
-        resetTimerBuffer();
+    public static boolean bufferIsEmpty()
+    {
+        return ((timeIntervals[1] == 0)); //|| (timeIntervals[0] == 0));
+    }
 
-        updateTimerDisplays();
-
+    /**
+     * Sets both indices back to 0 and sets the timer idle flag
+     */
+    public static void resetTimer()
+    {
+        timeIntervals[0] = 0;
+        timeIntervals[1] = 0;
+        percentDeviation = 0;
         TIMER_IDLE = true;
     }
 
-
     /**
-     * Sets both indices back to 0
+     *
+     * @return both of the time intervals. Will be drawn to the screen
      */
-    public void resetTimerBuffer()
+    public static double[] getTimeIntervals()
     {
-        pastTwoStepIntervals[0] = 0;
-        pastTwoStepIntervals[1] = 0;
+        return new double[]{(double) timeIntervals[0], (double) timeIntervals[1]};
     }
 
-    public static double getTimer1()
+    public static double getPercentDeviation()
     {
-        return (double) pastTwoStepIntervals[0];
+        return percentDeviation;
     }
 
-    public static double getTimer2()
-    {
-        return (double) pastTwoStepIntervals[1];
-    }
-
-    /**
-     * Updates the TextView instances in MainActivity
-     */
-    public void updateTimerDisplays()
-    {
-//        MainActivity.setTimer1Display("Timer 1:" + pastTwoStepIntervals[0]);
-//        MainActivity.setTimer2Display("Timer 2: " + pastTwoStepIntervals[1]);
-    }
 }

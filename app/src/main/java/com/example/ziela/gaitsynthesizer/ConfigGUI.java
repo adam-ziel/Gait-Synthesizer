@@ -32,7 +32,7 @@ public class ConfigGUI extends View {
     }
 
     @Override
-    /*
+    /**
      * Draws GUI using canvas rather than XML files
      */
     protected void onDraw( Canvas canvas ) {
@@ -40,11 +40,11 @@ public class ConfigGUI extends View {
         if( startTime == 0 )
             startTime = currTime;
         if( movie != null ) {
-            int playTime = (int)( (currTime - startTime)%movie.duration() );
-            movie.setTime( playTime );
-            canvas.scale( (float) 4.5, (float) 4.5 );
+            int playTime = (int)( (currTime - startTime)%movie.duration() ); //gets current frame
+            movie.setTime( playTime ); //show the current frame
+            canvas.scale( (float) 4.5, (float) 4.5 ); //size up the gif to fit S7 Edge
             movie.draw( canvas, 0, 0 );
-            invalidate(); // redraw canvas
+            invalidate(); // redraw canvas. Flags Android OS. forces redraw
         }
     }
 }

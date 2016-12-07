@@ -7,7 +7,6 @@ import android.hardware.SensorManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.PowerManager;
-import android.widget.TextView;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -22,34 +21,15 @@ public class MainActivity extends AppCompatActivity
     PowerManager.WakeLock wakeLock;
 
     private FrequencyBuffer[] bufferPool = new FrequencyBuffer[8];
-
     private double[] scaleFrequencies = new double[8];
-
     private int[] majorScaleSteps = {0, 2, 4, 5, 7, 9, 11, 12};
-
-    private int[] minorScaleSteps = {0, 2, 3, 5, 7, 8, 10, 12};
+    //private int[] minorScaleSteps = {0, 2, 3, 5, 7, 8, 10, 12}; not used
 
     private Timer timer = new Timer();
-
-    private static int stepCount = 0;
 
     private int lastStep;
 
     private static boolean firstStep = true;
-
-    private static TextView stepCountDisplay;
-
-    private static TextView timer1Display;
-
-    private static TextView timer2Display;
-
-    private static TextView deviationDisplay;
-
-    public static final int ROOT = 0;
-
-    public static final int THIRD = 2;
-
-    public static final int FIFTH = 4;
 
 
     @Override
@@ -60,19 +40,14 @@ public class MainActivity extends AppCompatActivity
         //super scary stuff
         //uses java class background changer as its layout instead of an xml layout
         View view = new MainGUI(this);
-        setContentView(view);
-        //setContentView(R.layout.activity_main);
+        setContentView(view); //use my gui
         view.setOnTouchListener(this);
         int rootNote = InputActivity.getInputNote(); // starting note in scale
 
         scaleFrequencies = populateScale(rootNote, majorScaleSteps);
 
         createFrequencyBufferForEachScaleIndex();
-
-        //getXMLHandles();
-
         prepareStepDetector();
-
         configurePowerManager();
     }
 
@@ -80,18 +55,21 @@ public class MainActivity extends AppCompatActivity
     /**
      * Triggers timer, and advances note sequence on step detection event
      *
-     * @param event
+     * @param event the accelerometer has registerd a step
      */
     public void onSensorChanged(SensorEvent event)
     {
-        Sensor sensor = event.sensor;
-
-        if (sensor.getType() == Sensor.TYPE_STEP_DETECTOR)
-        {
-            timer.onStep();
-
-            advanceNoteSequence();
+        if ((!timer.percentDeviationIsOutsideTolerance())){
+            incrementStepCounts(true); //his step was ok
+        }else{
+            //steps took too long reset us back
+            timer.resetTimer();
+            incrementStepCounts(false);
         }
+        Timer.recordTimeInterval(); //set the time stamps
+        //calculate the difference
+        sumTimeDifferences = sumTimeDifferences + (int) Math.abs(Timer.getTimeIntervals()[0] - Timer.getTimeIntervals()[1]);
+        advanceNoteSequence(); //advance the note
     }
 
 
@@ -103,11 +81,18 @@ public class MainActivity extends AppCompatActivity
     {
         if (event.getAction() == MotionEvent.ACTION_DOWN)
         {
-            timer.onStep();
-
-            advanceNoteSequence();
+            if ((!timer.percentDeviationIsOutsideTolerance())){
+                incrementStepCounts(true); //his step was ok
+            }else{
+                //steps took too long reset us back
+                timer.resetTimer();
+                incrementStepCounts(false);
+            }
+            Timer.recordTimeInterval(); //set the time stamps
+            //calculate the difference
+            sumTimeDifferences = sumTimeDifferences + (int) Math.abs(Timer.getTimeIntervals()[0] - Timer.getTimeIntervals()[1]);
+            advanceNoteSequence();//advance the note
         }
-
         return false;
     }
 
@@ -117,29 +102,15 @@ public class MainActivity extends AppCompatActivity
      */
     public void advanceNoteSequence()
     {
-//        if (stepCount > 8)
-//            playChord();
-//
-
-        if (!firstStep)
+        //prevent us from stopping a buffer that was not playing
+        if (!firstStep) {
             bufferPool[lastStep].stop();
+        }
+        bufferPool[currentConsecutiveStepCount%8].play();
+        lastStep = currentConsecutiveStepCount%8;
 
-        bufferPool[stepCount%8].play();
-        lastStep = stepCount%8;
-
-//        stepCountDisplay.setText("Step Detector Detected: " + stepCount);
-        stepCount++;
-
-        firstStep = false;
+        firstStep = false; //we've taken a step
     }
-
-    public void playChord()
-    {
-        bufferPool[ROOT].play();
-        bufferPool[THIRD].play();
-        bufferPool[FIFTH].play();
-    }
-
 
     /**
      * Iterates through 8-entry frequency array, populating with
@@ -149,6 +120,7 @@ public class MainActivity extends AppCompatActivity
     {
         double[] scaleFrequencies = new double[8]; // wasteful? but i guess killed once we return?
 
+        //populating the scales. Math
         for (int i = 0; i < 8; i++)
         {
             scaleFrequencies[i] = midiNoteToFrequency(rootNote + scaleSteps[i]);
@@ -173,47 +145,15 @@ public class MainActivity extends AppCompatActivity
      */
     public void createFrequencyBufferForEachScaleIndex()
     {
-        FrequencyBuffer note1 = new FrequencyBuffer(scaleFrequencies[0]);
-        FrequencyBuffer note2 = new FrequencyBuffer(scaleFrequencies[1]);
-        FrequencyBuffer note3 = new FrequencyBuffer(scaleFrequencies[2]);
-        FrequencyBuffer note4 = new FrequencyBuffer(scaleFrequencies[3]);
-        FrequencyBuffer note5 = new FrequencyBuffer(scaleFrequencies[4]);
-        FrequencyBuffer note6 = new FrequencyBuffer(scaleFrequencies[5]);
-        FrequencyBuffer note7 = new FrequencyBuffer(scaleFrequencies[6]);
-        FrequencyBuffer note8 = new FrequencyBuffer(scaleFrequencies[7]);
-
-        bufferPool[0] = note1;
-        bufferPool[1] = note2;
-        bufferPool[2] = note3;
-        bufferPool[3] = note4;
-        bufferPool[4] = note5;
-        bufferPool[5] = note6;
-        bufferPool[6] = note7;
-        bufferPool[7] = note8;
+        for (int i = 0; i < 8; i++)
+        {
+            bufferPool[i] = new FrequencyBuffer(scaleFrequencies[i]);
+        }
     }
 
 
     /**
-     * Retrieves handles to all XML elements we need to modify
-     */
-    /*
-    public void getXMLHandles()
-    {
-        stepCountDisplay = (TextView) findViewById(R.id.mainSteps);
-        timer1Display = (TextView) findViewById(R.id.timer1Text);
-        timer2Display = (TextView) findViewById(R.id.timer2Text);
-        deviationDisplay = (TextView) findViewById(R.id.deviationText);
-
-        View v = findViewById(R.id.simulatorButton);
-
-
-        if (v != null)
-            v.setOnTouchListener(this);
-    }*/
-
-
-    /**
-     * Matt, please rename. What is this doing?
+     * Linking the accelerometer.
      */
     public void prepareStepDetector()
     {
@@ -227,7 +167,7 @@ public class MainActivity extends AppCompatActivity
 
 
     /**
-     * David, please rename
+     * Telling the application to never stop running even if the user minimizes or turns off screen
      */
     public void configurePowerManager()
     {
@@ -238,7 +178,7 @@ public class MainActivity extends AppCompatActivity
 
 
     /**
-     * David's
+     * User has tabbed back into the application
      */
     protected void onResume()
     {
@@ -250,38 +190,79 @@ public class MainActivity extends AppCompatActivity
 
 
     /**
-     * David's
+     * User has left the application either by minimizing, tabbing out, or turning off screen
      */
     protected void onStop()
     {
         super.onStop();
 
-        if (!wakeLock.isHeld())
+        if (!wakeLock.isHeld()) {
             wakeLock.acquire(); //I want to keep going when the screen is off so keep CPU on
+        }
     }
 
-    public static int getStepCount()
+    // begin metrics
+    private static int totalStepCount = 0;
+    private static int currentConsecutiveStepCount = 0;
+    private static int maxConsecutiveStepCount = 0;
+    private static int totalNonConsecutiveStepCount = 0;
+    private static int sumTimeDifferences = 0;
+
+    /**
+     * Increments all of the step related counter metrics
+     * @param isConsecutiveStep valid user step
+     */
+    public static void incrementStepCounts(boolean isConsecutiveStep){
+        totalStepCount++;
+        if (isConsecutiveStep){
+            currentConsecutiveStepCount++;
+            if (currentConsecutiveStepCount > maxConsecutiveStepCount) {
+                maxConsecutiveStepCount = currentConsecutiveStepCount;
+            }
+        }else{
+            currentConsecutiveStepCount = 0;
+            totalNonConsecutiveStepCount++;
+        }
+    }
+
+    //Aaron Carpenter is the hero we need. @ProfA****** I need a lock of your hair for my shrine
+    //                                                                  -Adam
+
+    /**
+     * Return the current step count
+     * @return number of valid steps the user has currently taken
+     */
+    public static int getCurrentConsecutiveStepCount()
     {
-        return stepCount;
+        return currentConsecutiveStepCount;
     }
 
-    public static boolean getFirstStep()
+    /**
+     * Get the value of the most good steps the user has taken
+     * @return maximum number of good steps the user took
+     */
+    public static int getMaxConsecutiveStepCount()
     {
-        return firstStep;
+        return maxConsecutiveStepCount;
     }
 
-
-    public static void setDeviationDisplay(String message) { deviationDisplay.setText(message); }
-
-    public static void setTimer1Display(String message) { timer1Display.setText(message); }
-
-    public static void setTimer2Display(String message) { timer2Display.setText(message); }
-
-    public static void resetStepCount()
+    /**
+     * Gets how many steps were miss timed
+     * @return max number of steps the user took that were back
+     */
+    public static int getTotalNonConsecutiveStepCount()
     {
-        stepCount = 0;
+        return totalNonConsecutiveStepCount;
     }
 
+    /**
+     * Get the number of how many steps the user has taken with the application running
+     * @return totalnumber of steps the user took since opening the application
+     */
+    public static int getTotalStepCount()
+    {
+        return totalStepCount;
+    }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {

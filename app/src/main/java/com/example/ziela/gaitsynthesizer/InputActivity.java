@@ -15,7 +15,7 @@ import android.view.View.OnTouchListener;
 
 
 /**
- *
+ * Handles selecting an intial tone for the entire musical scale later on
  */
 public class InputActivity extends AppCompatActivity implements OnTouchListener
 {
@@ -36,9 +36,7 @@ public class InputActivity extends AppCompatActivity implements OnTouchListener
         setContentView(R.layout.activity_input);
 
         getXMLHandles();
-
         getNoteValue();
-
         createBufferAndPlay();
 
         noteSelectBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
@@ -47,9 +45,7 @@ public class InputActivity extends AppCompatActivity implements OnTouchListener
             public void onProgressChanged(SeekBar seekBar, int seekBarValue, boolean fromUser)
             {
                 getNoteValue();
-
                 stopBufferAndDeallocate();
-
                 createBufferAndPlay();
             }
 
@@ -84,9 +80,7 @@ public class InputActivity extends AppCompatActivity implements OnTouchListener
     public void getXMLHandles()
     {
         inputNoteDisplay = (TextView) findViewById(R.id.inputNoteTextView);
-
         noteSelectBar = (SeekBar) findViewById(R.id.seekBar);
-
         View v = findViewById(R.id.bypassButton);
 
         if (v != null)
@@ -100,7 +94,6 @@ public class InputActivity extends AppCompatActivity implements OnTouchListener
     public void getNoteValue()
     {
         inputMIDINote = noteSelectBar.getProgress() + NOTE_OFFSET;
-
         inputNoteDisplay.setText("The starting note will be " + inputMIDINote);
     }
 
@@ -115,7 +108,9 @@ public class InputActivity extends AppCompatActivity implements OnTouchListener
         notePreview.play();
     }
 
-
+    /**
+     * Stop playing and kill the old one
+     */
     public void stopBufferAndDeallocate()
     {
         notePreview.stop();
@@ -134,7 +129,7 @@ public class InputActivity extends AppCompatActivity implements OnTouchListener
      */
     public void transitionToCalibrationActivity()
     {
-        stopBufferAndDeallocate();
+        stopBufferAndDeallocate(); //prevent mem leaks
 
         Intent configuration = new Intent(InputActivity.this, ConfigurationActivity.class);
 

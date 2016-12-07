@@ -13,14 +13,15 @@ import android.view.View;
 /**
  * You touch the brackets I'll kill you
  * This is the activity for the home page. Basically the only thing this class cares about is when to transition to the next
- * activity. We can alter how this home page looks in the XML file labelled activity_home.xml */
+ * activity. We can alter how this home page looks in the XML file labelled activity_home.xml
+ */
 public class HomeActivity extends AppCompatActivity
 {
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
+        setContentView(R.layout.activity_home); //link the XML
 
         View v = findViewById(R.id.beginButton); // get button handle
 

@@ -1,8 +1,5 @@
 package com.example.ziela.gaitsynthesizer;
 
-/**
- * Created by ziela on 11/20/16.
- */
 
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -27,7 +24,6 @@ import android.view.View.OnTouchListener;
 public class ConfigurationActivity extends AppCompatActivity
         implements SensorEventListener, OnTouchListener
 {
-    WebView webView;
     private TextView textView, noteTextView;
 
     private SensorManager mSensorManager;
@@ -58,7 +54,7 @@ public class ConfigurationActivity extends AppCompatActivity
      * Called every time a sensor event occurs.
      * If the event is a STEP_DETECT, launch into MainActivity
      *
-     * @param event
+     * @param event the sensor has become calibrated
      */
     public void onSensorChanged(SensorEvent event)
     {
@@ -76,9 +72,11 @@ public class ConfigurationActivity extends AppCompatActivity
     }
 
     @Override
-    /*
+    /**
      * This method detects buttons presses,
      * and bypasses the step detector calibration
+     * @param v current context
+     * @param event the user has touched the button
      */
     public boolean onTouch(View v, MotionEvent event)
     {
@@ -98,11 +96,17 @@ public class ConfigurationActivity extends AppCompatActivity
         // shouldn't be called, need to implement SensorEventListener
     }
 
+    /**
+     * User has reopened the application
+     */
     protected void onResume() {
         super.onResume();
         mSensorManager.registerListener(this, mStepDetectorSensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
+    /**
+     * User has minimized the application
+     */
     protected void onStop() {
         super.onStop();
         mSensorManager.unregisterListener(this, mStepDetectorSensor);
